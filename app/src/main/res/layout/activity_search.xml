@@ -44,9 +44,10 @@
                     android:backgroundTint="@android:color/white"
                     android:gravity="center_vertical"
                     android:hint="@string/default_search_bar"
+                    android:inputType="text"
+                    android:imeOptions="actionSearch"
                     android:maxLines="1"
                     android:padding="8dp"
-                    android:textColor="#FFFFFF"
                     android:textColorHint="#CC000000" />
 
                 <androidx.appcompat.widget.AppCompatImageView
@@ -92,7 +93,7 @@
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/tab_10_day" />
+            android:text="@string/tab_7_day" />
     </com.google.android.material.tabs.TabLayout>
 
     <RelativeLayout
@@ -110,7 +111,8 @@
             android:id="@+id/progressBar"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_centerInParent="true"/>
+            android:layout_centerInParent="true"
+            android:visibility="gone" />
     </RelativeLayout>
 
 

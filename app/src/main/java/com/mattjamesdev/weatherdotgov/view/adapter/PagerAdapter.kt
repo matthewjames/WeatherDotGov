@@ -1,4 +1,4 @@
-package com.mattjamesdev.weatherdotgov.adapter
+package com.mattjamesdev.weatherdotgov.view.adapter
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
