@@ -6,8 +6,10 @@ import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.mattjamesdev.weatherdotgov.network.BASE_URL
 import com.mattjamesdev.weatherdotgov.network.WeatherDotGovNetwork
+import com.mattjamesdev.weatherdotgov.network.model.DayForecast
 import com.mattjamesdev.weatherdotgov.network.model.ForecastData
 import com.mattjamesdev.weatherdotgov.network.model.Location
+import com.mattjamesdev.weatherdotgov.network.model.Period
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -19,7 +21,7 @@ class SearchActivityRepository(val application: Application) {
     val TAG = "SearchActivityRepo"
     val isLoading = MutableLiveData<Boolean>()
     val hourlyForecastData = MutableLiveData<ForecastData>()
-    val sevenDayForecastData = MutableLiveData<ForecastData>()
+    val sevenDayForecastData = MutableLiveData<MutableList<DayForecast>>()
 
     private val client = OkHttpClient.Builder().build()
     private val retrofit = Retrofit.Builder()
@@ -48,7 +50,7 @@ class SearchActivityRepository(val application: Application) {
                     val y = result.properties.gridY
 
                     getHourlyForecastData(wfo, x, y)
-                    get7DayForecastData(wfo, x, y)
+                    getSevenDayForecastData(wfo, x, y)
                 }
             }
 
@@ -59,12 +61,12 @@ class SearchActivityRepository(val application: Application) {
         })
     }
 
-    fun getHourlyForecastData(wfo: String, x: Int, y: Int){
+    private fun getHourlyForecastData(wfo: String, x: Int, y: Int){
         service.getHourlyForecastData(wfo, x, y).enqueue(object: Callback<ForecastData>{
             override fun onResponse(call: Call<ForecastData>, response: Response<ForecastData>) {
                 isLoading.value = false
                 hourlyForecastData.value = response.body()!!
-                Log.d(TAG, hourlyForecastData.value.toString())
+                Log.d(TAG, "Hourly: ${hourlyForecastData.value.toString()}")
             }
 
             override fun onFailure(call: Call<ForecastData>, t: Throwable) {
@@ -73,17 +75,46 @@ class SearchActivityRepository(val application: Application) {
         })
     }
 
-    fun get7DayForecastData(wfo: String, x: Int, y: Int){
+    private fun getSevenDayForecastData(wfo: String, x: Int, y: Int){
         service.get7DayForecastData(wfo, x, y).enqueue(object: Callback<ForecastData>{
             override fun onResponse(call: Call<ForecastData>, response: Response<ForecastData>) {
                 isLoading.value = false
-                sevenDayForecastData.value = response.body()!!
-                Log.d(TAG, sevenDayForecastData.value.toString())
+
+                parseSevenDayForecastData(response.body()!!)
+
+//                sevenDayForecastData.value = response.body()!!
+                Log.d(TAG, "Seven day: ${sevenDayForecastData.value.toString()}")
             }
 
             override fun onFailure(call: Call<ForecastData>, t: Throwable) {
                 isLoading.value = false
             }
         })
+    }
+
+    // parses List<Period> in ForecastData to List<DayForecast>
+    private fun parseSevenDayForecastData(data: ForecastData){
+        val dayForecasts = mutableListOf<DayForecast>()
+        val date = data.properties.periods[0].startTime
+        var periods = mutableListOf<Period>(data.properties.periods[0])
+        var dayForecast = DayForecast(date, periods)
+
+        for(i in 1 until (data.properties.periods.size)){
+            val currentPeriod = data.properties.periods[i]
+
+            if(currentPeriod.startTime.substring(0..9) == dayForecast.date.substring(0..9)){
+                // add current to dayForecast
+                dayForecast.periods.add(currentPeriod)
+            } else {
+                // add dayForecast to list, create new dayForecast object with current
+                dayForecasts.add(dayForecast)
+                periods = mutableListOf<Period>(currentPeriod)
+                dayForecast = DayForecast(currentPeriod.startTime, periods)
+            }
+        }
+
+        dayForecasts.add(dayForecast) // add last element to list
+
+        sevenDayForecastData.value = dayForecasts
     }
 }

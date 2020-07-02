@@ -3,6 +3,8 @@ package com.mattjamesdev.weatherdotgov.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import com.mattjamesdev.weatherdotgov.network.model.DayForecast
 import com.mattjamesdev.weatherdotgov.network.model.ForecastData
 import com.mattjamesdev.weatherdotgov.repository.SearchActivityRepository
 
@@ -10,7 +12,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     private val repository = SearchActivityRepository(application)
     val isLoading: LiveData<Boolean>
     val hourlyForecastData: LiveData<ForecastData>
-    val sevenDayForecastData: LiveData<ForecastData>
+    val sevenDayForecastData: LiveData<MutableList<DayForecast>>
 
     init {
         this.isLoading = repository.isLoading

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    >
+
+    <RelativeLayout
+        android:id="@+id/rvDayContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@id/ivForecastIcon"
+        android:layout_margin="4dp"
+        android:padding="4dp">
+
+        <TextView
+            android:id="@+id/tvDay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Day"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvShortForecast"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tvDay"
+            android:text="Short Forecast" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rvTempContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_margin="4dp">
+
+        <TextView
+            android:id="@+id/tvHighTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="High"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvLowTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tvHighTemp"
+            android:text="Low" />
+    </RelativeLayout>
+
+
+
+    <ImageView
+        android:id="@+id/ivForecastIcon"
+        android:maxHeight="60dp"
+        android:minHeight="60dp"
+        android:maxWidth="60dp"
+        android:minWidth="60dp"
+        android:layout_marginEnd="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/rvTempContainer"
+        android:layout_centerVertical="true"
+        app:srcCompat="@drawable/ic_image_black_24dp" />
+</RelativeLayout>

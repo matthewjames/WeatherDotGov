@@ -12,11 +12,15 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
 import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.view.adapter.PagerAdapter
+import com.mattjamesdev.weatherdotgov.view.adapter.SevenDayAdapter
 import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
 import kotlinx.android.synthetic.main.activity_search.*
+import kotlinx.android.synthetic.main.fragment_seven_day.*
 import java.util.*
 
 class SearchActivity : AppCompatActivity() {
@@ -27,7 +31,15 @@ class SearchActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
 
+        initViewModelComponents()
+        initSearchButtons()
+        initTabLayout()
+    }
+
+    private fun initViewModelComponents(){
         viewModel = ViewModelProvider(this).get(SearchActivityViewModel::class.java)
+
+        // progress bar
         viewModel.isLoading.observe(this, Observer {
             if(it){
                 progressBar.visibility = VISIBLE
@@ -36,23 +48,19 @@ class SearchActivity : AppCompatActivity() {
             }
         })
 
-        ivSearch.setOnClickListener {
-            search()
-        }
-
-        etLocation.setOnEditorActionListener { v, actionId, event ->
-            if(actionId == EditorInfo.IME_ACTION_SEARCH){
-                search()
-                true
-            } else {
-                false
+        viewModel.sevenDayForecastData.observe(this, Observer {
+            rvSevenDay.apply {
+                layoutManager = LinearLayoutManager(this.context)
+                adapter = SevenDayAdapter(it)
             }
-        }
+        })
+    }
 
-
+    private fun initTabLayout(){
         val pagerAdapter = PagerAdapter(supportFragmentManager, tabLayout.tabCount)
         viewPager.adapter = pagerAdapter
         viewPager.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
+        viewPager.offscreenPageLimit = pagerAdapter.numberOfTabs
 
         tabLayout.addOnTabSelectedListener(object: TabLayout.OnTabSelectedListener{
             override fun onTabSelected(p0: TabLayout.Tab?) {
@@ -67,7 +75,25 @@ class SearchActivity : AppCompatActivity() {
         })
     }
 
-    fun search(){
+    private fun initSearchButtons(){
+
+        // search bar button
+        ivSearch.setOnClickListener {
+            search()
+        }
+
+        // keyboard button
+        etLocation.setOnEditorActionListener { v, actionId, event ->
+            if(actionId == EditorInfo.IME_ACTION_SEARCH){
+                search()
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun search(){
         val coords = getCoords()
         viewModel.getLocationProperties(coords)
 
@@ -75,11 +101,11 @@ class SearchActivity : AppCompatActivity() {
         val view = currentFocus
         if (view != null) {
             val imm = this@SearchActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0)
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
 
-    fun getCoords() : String {
+    private fun getCoords() : String {
         val geocoder = Geocoder(this, Locale.getDefault())
         val location = geocoder.getFromLocationName(etLocation.text.toString(), 1)
 

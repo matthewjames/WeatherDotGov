@@ -3,7 +3,7 @@ package com.mattjamesdev.weatherdotgov.view.adapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
-import com.mattjamesdev.weatherdotgov.view.TenDayFragment
+import com.mattjamesdev.weatherdotgov.view.SevenDayFragment
 import com.mattjamesdev.weatherdotgov.view.TodayFragment
 import com.mattjamesdev.weatherdotgov.view.TomorrowFragment
 
@@ -16,7 +16,7 @@ class PagerAdapter(fragmentManager: FragmentManager, val numberOfTabs: Int) : Fr
             1 -> {
                 return TomorrowFragment()
             }
-            else -> return TenDayFragment()
+            else -> return SevenDayFragment()
 
         }
     }
