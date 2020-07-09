@@ -1,7 +1,17 @@
 package com.mattjamesdev.weatherdotgov.network.model
 
-data class ForecastData(
+class ForecastData(
     val properties: PropertiesY
+)
+
+data class PropertiesY(
+    val forecastGenerator: String,
+    val generatedAt: String,
+    val periods: MutableList<Period>,
+    val units: String,
+    val updateTime: String,
+    val updated: String,
+    val validTimes: String
 )
 
 data class Period(
@@ -18,14 +28,4 @@ data class Period(
     val temperatureUnit: String,
     val windDirection: String,
     val windSpeed: String
-)
-
-data class PropertiesY(
-    val forecastGenerator: String,
-    val generatedAt: String,
-    val periods: List<Period>,
-    val units: String,
-    val updateTime: String,
-    val updated: String,
-    val validTimes: String
 )

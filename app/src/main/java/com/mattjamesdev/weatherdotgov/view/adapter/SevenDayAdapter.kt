@@ -26,17 +26,30 @@ class SevenDayAdapter(val forecastData: MutableList<DayForecast>): RecyclerView.
 
 class SevenDayViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
     fun bind(dayForecast: DayForecast){
-        itemView.tvDay.text = dayForecast.periods[0].name
-        itemView.tvShortForecast.text = dayForecast.periods[0].shortForecast
+        val day = dayForecast.high!!.name
+        val shortForecast = dayForecast.high!!.shortForecast
+        val highTemp = dayForecast.high!!.temperature
+        val lowTemp = dayForecast.low!!.temperature
+        val iconPath = dayForecast.high!!.icon
 
-        if (dayForecast.periods.size > 1) {
-            itemView.tvHighTemp.text = "${dayForecast.periods[0].temperature.toString()}\u00B0${dayForecast.periods[0].temperatureUnit}"
-            itemView.tvLowTemp.text = "${dayForecast.periods[1].temperature.toString()}\u00B0${dayForecast.periods[0].temperatureUnit}"
-        } else {
-            itemView.tvHighTemp.text = "--"
-            itemView.tvLowTemp.text = "${dayForecast.periods[0].temperature.toString()}\u00B0${dayForecast.periods[0].temperatureUnit}"
-        }
+        itemView.tvDay.text = day
+        itemView.tvShortForecast.text = shortForecast
+        itemView.tvHighTemp.text = highTemp.toString()
+        itemView.tvLowTemp.text = lowTemp.toString()
 
-        Picasso.get().load(dayForecast.periods[0].icon).into(itemView.ivForecastIcon)
+//        if (dayForecast.periods.size > 1) {
+//            itemView.tvHighTemp.text = "${dayForecast.periods[0].temperature.toString()}\u00B0${dayForecast.periods[0].temperatureUnit}"
+//            itemView.tvLowTemp.text = "${dayForecast.periods[1].temperature.toString()}\u00B0${dayForecast.periods[0].temperatureUnit}"
+//        } else {
+//            if (dayForecast.periods[0].isDaytime) {
+//                itemView.tvHighTemp.text = "${dayForecast.periods[0].temperature.toString()}\u00B0${dayForecast.periods[0].temperatureUnit}"
+//                itemView.tvLowTemp.text = "--"
+//            } else {
+//                itemView.tvHighTemp.text = "--"
+//                itemView.tvLowTemp.text = "${dayForecast.periods[0].temperature.toString()}\u00B0${dayForecast.periods[0].temperatureUnit}"
+//            }
+//        }
+
+        Picasso.get().load(iconPath).into(itemView.ivForecastIcon)
     }
 }

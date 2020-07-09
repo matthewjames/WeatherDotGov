@@ -48,7 +48,7 @@ class SearchActivity : AppCompatActivity() {
             }
         })
 
-        viewModel.sevenDayForecastData.observe(this, Observer {
+        viewModel.dailyForecastData.observe(this, Observer {
             rvSevenDay.apply {
                 layoutManager = LinearLayoutManager(this.context)
                 adapter = SevenDayAdapter(it)

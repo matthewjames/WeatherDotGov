@@ -1,6 +1,8 @@
 package com.mattjamesdev.weatherdotgov.network.model
 
 data class DayForecast(
-    val date: String,
-    val periods: MutableList<Period>
+    var date: String? = null,
+    var hourly: List<Period>? = null,
+    var high: Period? = null,
+    var low: Period? = null
 )

@@ -6,10 +6,7 @@ import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.mattjamesdev.weatherdotgov.network.BASE_URL
 import com.mattjamesdev.weatherdotgov.network.WeatherDotGovNetwork
-import com.mattjamesdev.weatherdotgov.network.model.DayForecast
-import com.mattjamesdev.weatherdotgov.network.model.ForecastData
-import com.mattjamesdev.weatherdotgov.network.model.Location
-import com.mattjamesdev.weatherdotgov.network.model.Period
+import com.mattjamesdev.weatherdotgov.network.model.*
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -21,13 +18,13 @@ class SearchActivityRepository(val application: Application) {
     val TAG = "SearchActivityRepo"
     val isLoading = MutableLiveData<Boolean>()
     val hourlyForecastData = MutableLiveData<ForecastData>()
-    val sevenDayForecastData = MutableLiveData<MutableList<DayForecast>>()
+    val sevenDayForecastData = MutableLiveData<ForecastData>()
+    val forecastDataBundle = MutableLiveData<ForecastDataBundle>()
 
-    private val client = OkHttpClient.Builder().build()
+//    private val client = OkHttpClient.Builder().build()
     private val retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
-        .client(client)
         .build()
 
     private val service = retrofit.create(WeatherDotGovNetwork::class.java)
@@ -66,6 +63,7 @@ class SearchActivityRepository(val application: Application) {
             override fun onResponse(call: Call<ForecastData>, response: Response<ForecastData>) {
                 isLoading.value = false
                 hourlyForecastData.value = response.body()!!
+                forecastDataBundle.value
                 Log.d(TAG, "Hourly: ${hourlyForecastData.value.toString()}")
             }
 
@@ -79,10 +77,7 @@ class SearchActivityRepository(val application: Application) {
         service.get7DayForecastData(wfo, x, y).enqueue(object: Callback<ForecastData>{
             override fun onResponse(call: Call<ForecastData>, response: Response<ForecastData>) {
                 isLoading.value = false
-
-                parseSevenDayForecastData(response.body()!!)
-
-//                sevenDayForecastData.value = response.body()!!
+                sevenDayForecastData.value = response.body()!!
                 Log.d(TAG, "Seven day: ${sevenDayForecastData.value.toString()}")
             }
 
@@ -90,31 +85,5 @@ class SearchActivityRepository(val application: Application) {
                 isLoading.value = false
             }
         })
-    }
-
-    // parses List<Period> in ForecastData to List<DayForecast>
-    private fun parseSevenDayForecastData(data: ForecastData){
-        val dayForecasts = mutableListOf<DayForecast>()
-        val date = data.properties.periods[0].startTime
-        var periods = mutableListOf<Period>(data.properties.periods[0])
-        var dayForecast = DayForecast(date, periods)
-
-        for(i in 1 until (data.properties.periods.size)){
-            val currentPeriod = data.properties.periods[i]
-
-            if(currentPeriod.startTime.substring(0..9) == dayForecast.date.substring(0..9)){
-                // add current to dayForecast
-                dayForecast.periods.add(currentPeriod)
-            } else {
-                // add dayForecast to list, create new dayForecast object with current
-                dayForecasts.add(dayForecast)
-                periods = mutableListOf<Period>(currentPeriod)
-                dayForecast = DayForecast(currentPeriod.startTime, periods)
-            }
-        }
-
-        dayForecasts.add(dayForecast) // add last element to list
-
-        sevenDayForecastData.value = dayForecasts
     }
 }
