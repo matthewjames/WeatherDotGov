@@ -10,11 +10,11 @@ const val BASE_URL = "https://api.weather.gov/"
 
 interface WeatherDotGovNetwork {
     @GET("points/{coordinates}")
-    fun getProperties(@Path("coordinates") key: String) : Call<Location>
+    suspend fun getProperties(@Path("coordinates") key: String) : Location
 
     @GET("gridpoints/{wfo}/{x},{y}/forecast/hourly")
-    fun getHourlyForecastData(@Path("wfo") wfo: String, @Path("x") x: Int, @Path("y") y: Int) : Call<ForecastData>
+    suspend fun getHourlyForecastData(@Path("wfo") wfo: String, @Path("x") x: Int, @Path("y") y: Int) : ForecastData
 
     @GET("gridpoints/{wfo}/{x},{y}/forecast")
-    fun get7DayForecastData(@Path("wfo") wfo: String, @Path("x") x: Int, @Path("y") y: Int) : Call<ForecastData>
+    suspend fun get7DayForecastData(@Path("wfo") wfo: String, @Path("x") x: Int, @Path("y") y: Int) : ForecastData
 }

@@ -7,6 +7,9 @@ import androidx.lifecycle.MutableLiveData
 import com.mattjamesdev.weatherdotgov.network.BASE_URL
 import com.mattjamesdev.weatherdotgov.network.WeatherDotGovNetwork
 import com.mattjamesdev.weatherdotgov.network.model.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -33,57 +36,74 @@ class SearchActivityRepository(val application: Application) {
         isLoading.value = !(isLoading.value != null && isLoading.value!!)
     }
 
-    fun getLocationProperties(coords : String){
-        isLoading.value = true
+    suspend fun getLocationProperties(coords: String) = service.getProperties(coords)
 
-        service.getProperties(coords).enqueue(object: Callback<Location>{
-            override fun onResponse(call: Call<Location>, response: Response<Location>) {
-                if(response.isSuccessful){
-                    val result = response.body()!!
-                    Log.d(TAG, result.toString())
+    suspend fun getHourlyForecastData(wfo: String, x: Int, y: Int) = service.getHourlyForecastData(wfo, x, y)
 
-                    val wfo = result.properties.gridId
-                    val x = result.properties.gridX
-                    val y = result.properties.gridY
+    suspend fun getSevenDayForecastData(wfo: String, x: Int, y: Int) = service.get7DayForecastData(wfo, x, y)
 
-                    getHourlyForecastData(wfo, x, y)
-                    getSevenDayForecastData(wfo, x, y)
-                }
-            }
-
-            override fun onFailure(call: Call<Location>, t: Throwable) {
-                isLoading.value = false
-                Toast.makeText(application, "Failed to retrieve location properties", Toast.LENGTH_LONG).show()
-            }
-        })
-    }
-
-    private fun getHourlyForecastData(wfo: String, x: Int, y: Int){
-        service.getHourlyForecastData(wfo, x, y).enqueue(object: Callback<ForecastData>{
-            override fun onResponse(call: Call<ForecastData>, response: Response<ForecastData>) {
-                isLoading.value = false
-                hourlyForecastData.value = response.body()!!
-                forecastDataBundle.value
-                Log.d(TAG, "Hourly: ${hourlyForecastData.value.toString()}")
-            }
-
-            override fun onFailure(call: Call<ForecastData>, t: Throwable) {
-                isLoading.value = false
-            }
-        })
-    }
-
-    private fun getSevenDayForecastData(wfo: String, x: Int, y: Int){
-        service.get7DayForecastData(wfo, x, y).enqueue(object: Callback<ForecastData>{
-            override fun onResponse(call: Call<ForecastData>, response: Response<ForecastData>) {
-                isLoading.value = false
-                sevenDayForecastData.value = response.body()!!
-                Log.d(TAG, "Seven day: ${sevenDayForecastData.value.toString()}")
-            }
-
-            override fun onFailure(call: Call<ForecastData>, t: Throwable) {
-                isLoading.value = false
-            }
-        })
-    }
+//    suspend fun getLocationProperties(coords : String){
+//        isLoading.value = true
+//
+//        GlobalScope.launch(Dispatchers.IO){
+//            service.getProperties(coords).enqueue(object : Callback<Location> {
+//                override fun onResponse(call: Call<Location>, response: Response<Location>) {
+//                    if (response.isSuccessful) {
+//                        val result = response.body()!!
+//                        Log.d(TAG, result.toString())
+//
+//                        val wfo = result.properties.gridId
+//                        val x = result.properties.gridX
+//                        val y = result.properties.gridY
+//
+//                        GlobalScope.launch(Dispatchers.IO) {
+//                            getHourlyForecastData(wfo, x, y)
+//                            getSevenDayForecastData(wfo, x, y)
+//                        }
+//                    }
+//                }
+//
+//                override fun onFailure(call: Call<Location>, t: Throwable) {
+//                    GlobalScope.launch(Dispatchers.Main){isLoading.value = false}
+//                    Toast.makeText(
+//                        application,
+//                        "Failed to retrieve location properties",
+//                        Toast.LENGTH_LONG
+//                    ).show()
+//                }
+//            })
+//        }
+//    }
+//
+//    private suspend fun getHourlyForecastData(wfo: String, x: Int, y: Int){
+//        service.getHourlyForecastData(wfo, x, y).enqueue(object: Callback<ForecastData>{
+//            override fun onResponse(call: Call<ForecastData>, response: Response<ForecastData>) {
+//                GlobalScope.launch(Dispatchers.Main){
+//                    isLoading.value = false
+//                    hourlyForecastData.value = response.body()!!
+//                }
+//                Log.d(TAG, "Hourly: ${hourlyForecastData.value.toString()}")
+//            }
+//
+//            override fun onFailure(call: Call<ForecastData>, t: Throwable) {
+//                GlobalScope.launch(Dispatchers.Main){isLoading.value = false}
+//            }
+//        })
+//    }
+//
+//    private suspend fun getSevenDayForecastData(wfo: String, x: Int, y: Int){
+//        service.get7DayForecastData(wfo, x, y).enqueue(object: Callback<ForecastData>{
+//            override fun onResponse(call: Call<ForecastData>, response: Response<ForecastData>) {
+//                GlobalScope.launch(Dispatchers.Main){
+//                    isLoading.value = false
+//                    sevenDayForecastData.value = response.body()!!
+//                }
+//                Log.d(TAG, "Seven day: ${sevenDayForecastData.value.toString()}")
+//            }
+//
+//            override fun onFailure(call: Call<ForecastData>, t: Throwable) {
+//                GlobalScope.launch(Dispatchers.Main){isLoading.value = false}
+//            }
+//        })
+//    }
 }

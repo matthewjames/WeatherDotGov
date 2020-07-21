@@ -12,6 +12,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
@@ -21,6 +22,9 @@ import com.mattjamesdev.weatherdotgov.view.adapter.SevenDayAdapter
 import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
 import kotlinx.android.synthetic.main.activity_search.*
 import kotlinx.android.synthetic.main.fragment_seven_day.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 
 class SearchActivity : AppCompatActivity() {
@@ -37,7 +41,7 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun initViewModelComponents(){
-        viewModel = ViewModelProvider(this).get(SearchActivityViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(SearchActivityViewModel::class.java)
 
         // progress bar
         viewModel.isLoading.observe(this, Observer {
@@ -95,7 +99,8 @@ class SearchActivity : AppCompatActivity() {
 
     private fun search(){
         val coords = getCoords()
-        viewModel.getLocationProperties(coords)
+
+        viewModel.getForecastData(coords)
 
         // dismiss keyboard
         val view = currentFocus
