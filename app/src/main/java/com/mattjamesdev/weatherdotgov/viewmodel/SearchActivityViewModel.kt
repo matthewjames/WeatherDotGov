@@ -37,25 +37,18 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
             val x = locationData.properties.gridX
             val y = locationData.properties.gridY
 
+            Log.d(TAG, "Fetching hourly forecast data")
             val hourlyForecastData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getHourlyForecastData(wfo, x, y) }
-
             Log.d(TAG, "hourlyForecastData: ${hourlyForecastData.await()}")
 
+            Log.d(TAG, "Fetching seven day forecast data")
             val sevenDayForecastData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getSevenDayForecastData(wfo, x, y) }
-
             Log.d(TAG, "sevenDayForecastData: ${sevenDayForecastData.await()}")
 
             dailyForecastData.value = combineLatestData(hourlyForecastData.await(), sevenDayForecastData.await())
 
             Log.d(TAG, "dailyForecastData: $dailyForecastData")
         }
-    }
-
-    suspend fun fetchLocationData(coords: String): LiveData<Location>{
-        return GlobalScope.async(Dispatchers.IO){liveData(Dispatchers.IO){
-            val data = repository.getLocationProperties(coords)
-            emit(data)
-        }}.await()
     }
 
     // parses the hourly and seven day forecast data into MutableList<DayForecast>
@@ -68,8 +61,8 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
         // parse hourly data into DayForecast objects and add to dailyData
         val hourlyData = hourlyForecastData
         val sevenDayData = sevenDayForecastData
-        var hourlyPeriods: MutableList<Period> = hourlyData.properties.periods
-        var sevenDayPeriods: MutableList<Period> = sevenDayData.properties.periods
+        var hourlyPeriods: List<Period> = hourlyData.properties.periods
+        var sevenDayPeriods: List<Period> = sevenDayData.properties.periods
 
         val dayForecastList = MutableList(7){index -> DayForecast()}
 
@@ -120,7 +113,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                 dayForecast.high = sevenDayPeriods[0]
                 dayForecast.low = sevenDayPeriods[1]
                 try {
-                    sevenDayPeriods = sevenDayPeriods.slice(2..sevenDayPeriods.size-1) as MutableList<Period>
+                    sevenDayPeriods = sevenDayPeriods.slice(2..sevenDayPeriods.size-1)
                 } catch (e: ClassCastException) {
                     print(e.printStackTrace())
                 }
@@ -128,11 +121,15 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                 dayForecast.high = dayForecast.hourly!![0]
                 dayForecast.low = sevenDayPeriods[0]
                 try {
-                    sevenDayPeriods = sevenDayPeriods.slice(1..sevenDayPeriods.size-1) as MutableList<Period>
+                    sevenDayPeriods = sevenDayPeriods.slice(1..sevenDayPeriods.size-1)
                 } catch (e: ClassCastException) {
                     print(e.printStackTrace())
                 }
             }
+
+            // initialize tempUnit
+
+            dayForecast.tempUnit = dayHourlyPeriodList[0].temperatureUnit
         }
 
         return dayForecastList

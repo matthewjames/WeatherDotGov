@@ -4,5 +4,6 @@ data class DayForecast(
     var date: String? = null,
     var hourly: List<Period>? = null,
     var high: Period? = null,
-    var low: Period? = null
+    var low: Period? = null,
+    var tempUnit: String? = null
 )

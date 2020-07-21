@@ -31,11 +31,12 @@ class SevenDayViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         val highTemp = dayForecast.high!!.temperature
         val lowTemp = dayForecast.low!!.temperature
         val iconPath = dayForecast.high!!.icon
+        val tempUnit = dayForecast.tempUnit!!
 
         itemView.tvDay.text = day
         itemView.tvShortForecast.text = shortForecast
-        itemView.tvHighTemp.text = highTemp.toString()
-        itemView.tvLowTemp.text = lowTemp.toString()
+        itemView.tvHighTemp.text = "$highTemp\u00B0$tempUnit"
+        itemView.tvLowTemp.text = "$lowTemp\u00B0$tempUnit"
 
 //        if (dayForecast.periods.size > 1) {
 //            itemView.tvHighTemp.text = "${dayForecast.periods[0].temperature.toString()}\u00B0${dayForecast.periods[0].temperatureUnit}"

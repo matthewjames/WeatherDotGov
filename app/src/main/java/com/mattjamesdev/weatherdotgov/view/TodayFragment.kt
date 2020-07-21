@@ -8,9 +8,7 @@ import android.view.ViewGroup
 
 import com.mattjamesdev.weatherdotgov.R
 
-/**
- * A simple [Fragment] subclass.
- */
+
 class TodayFragment : Fragment() {
 
     override fun onCreateView(
