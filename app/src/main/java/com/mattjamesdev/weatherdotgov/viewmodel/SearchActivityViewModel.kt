@@ -58,25 +58,6 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
         }}.await()
     }
 
-//    private fun parseDailyForecastData(
-//        hourlyForecastData: LiveData<ForecastData>,
-//        sevenDayForecastData: LiveData<ForecastData>
-//    ): LiveData<MutableList<DayForecast>> {
-//
-//        val combinedData = MediatorLiveData<MutableList<DayForecast>>()
-//
-//        combinedData.addSource(hourlyForecastData) { value ->
-//            combinedData.value = combineLatestData(hourlyForecastData, sevenDayForecastData)
-//        }
-//
-//        combinedData.addSource(sevenDayForecastData) { value ->
-//            combinedData.value = combineLatestData(hourlyForecastData, sevenDayForecastData)
-//        }
-//
-//        return combinedData
-//    }
-
-
     // parses the hourly and seven day forecast data into MutableList<DayForecast>
     private fun combineLatestData(
         hourlyForecastData: ForecastData,
@@ -155,9 +136,5 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
         }
 
         return dayForecastList
-    }
-
-    private fun parseHourlyData(dailyData: MutableList<DayForecast>){
-
     }
 }

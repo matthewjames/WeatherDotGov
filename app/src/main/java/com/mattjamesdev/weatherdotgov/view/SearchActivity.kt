@@ -53,6 +53,11 @@ class SearchActivity : AppCompatActivity() {
         })
 
         viewModel.dailyForecastData.observe(this, Observer {
+            // populate Today tab with data
+
+            // populate Tomorrow tab with data
+
+            // Populate 7 Day tab with data
             rvSevenDay.apply {
                 layoutManager = LinearLayoutManager(this.context)
                 adapter = SevenDayAdapter(it)

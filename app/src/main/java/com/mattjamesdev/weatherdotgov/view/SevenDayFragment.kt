@@ -21,8 +21,6 @@ import kotlinx.android.synthetic.main.fragment_seven_day.*
  */
 class SevenDayFragment : Fragment() {
 
-    private lateinit var viewModel: SearchActivityViewModel
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -36,7 +34,6 @@ class SevenDayFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         rvSevenDay.addItemDecoration(DividerItemDecoration(view.context, DividerItemDecoration.VERTICAL))
-
 
     }
 }
