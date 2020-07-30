@@ -9,8 +9,6 @@
     android:visibility="invisible"
     tools:context=".view.TodayFragment">
 
-
-
     <TextView
         android:id="@+id/tvTodayDateTime"
         android:layout_width="wrap_content"

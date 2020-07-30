@@ -31,7 +31,10 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_search.*
 import kotlinx.android.synthetic.main.fragment_seven_day.*
 import kotlinx.android.synthetic.main.fragment_today.*
-import java.text.SimpleDateFormat
+import kotlinx.android.synthetic.main.fragment_tomorrow.*
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class SearchActivity : AppCompatActivity() {
@@ -110,24 +113,9 @@ class SearchActivity : AppCompatActivity() {
         })
 
         viewModel.dailyForecastData.observe(this, Observer {
-            // populate Today tab with data
-            val currentTime: String = SimpleDateFormat("MMMM d, h:mm a", Locale.getDefault()).format(Date())
-            val todayForecast: DayForecast = it.get(0)
-            val currentForecast: Period = todayForecast.hourly?.get(0)!!
-            val tempUnit = todayForecast.tempUnit
 
-
-            tvTodayDateTime.text = currentTime
-            tvTodayHigh.text = "${todayForecast.high?.temperature}\u00B0$tempUnit"
-            tvTodayLow.text = "${todayForecast.low?.temperature}\u00B0$tempUnit"
-            tvCurrentTemp.text = "${currentForecast.temperature}\u00B0$tempUnit"
-            tvTodayShortForecast.text = "${currentForecast.shortForecast}"
-            Picasso.get().load(currentForecast.icon).into(ivTodayIcon)
-            viewPager.adapter?.notifyDataSetChanged()
-
-            rlTodayFragment.visibility = VISIBLE
-
-            // populate Tomorrow tab with data
+            updateTodayTab(it.get(0))
+            updateTomorrowTab(it.get(1))
 
             // Populate 7 Day tab with data
             rvSevenDay.apply {
@@ -180,22 +168,39 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-    private fun initCurrentForecast(){
+    private fun updateTodayTab(todayForecast: DayForecast){
+        // populate Today tab with data
+        val currentDateTime: String = DateTimeFormatter.ofPattern("MMMM d, h:mm a", Locale.getDefault())
+                                                        .format(LocalDateTime.now())
+        val currentForecast: Period = todayForecast.hourly?.get(0)!!
+        val tempUnit = todayForecast.tempUnit
 
-        locationClient.lastLocation.addOnSuccessListener { location ->
-            Log.d(TAG, "Location coordinates: ${location.latitude}, ${location.longitude}")
+        tvTodayDateTime.text = currentDateTime
+        tvTodayHigh.text = "${todayForecast.high?.temperature}\u00B0$tempUnit"
+        tvTodayLow.text = "${todayForecast.low?.temperature}\u00B0$tempUnit"
+        tvCurrentTemp.text = "${currentForecast.temperature}\u00B0$tempUnit"
+        tvTodayShortForecast.text = "${currentForecast.shortForecast}"
+        Picasso.get().load(currentForecast.icon).into(ivTodayIcon)
 
-//            viewModel.getForecastData("${location.latitude},${location.longitude}")
-        }
+        viewPager.adapter?.notifyDataSetChanged()
+
+        rlTodayFragment.visibility = VISIBLE
     }
 
-    private fun loadFragment(){
-        val firstFragment = TomorrowFragment()
+    private fun updateTomorrowTab(tomorrowForecast: DayForecast){
+        val tomorrowDate: String = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.getDefault())
+                                                    .format(LocalDate.now().plusDays(1))
+        val tempUnit = tomorrowForecast.tempUnit
 
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.viewPager, firstFragment)
-            .addToBackStack(null)
-            .commit()
+        tvTomorrowDate.text = tomorrowDate
+        tvTomorrowHigh.text = "${tomorrowForecast.high?.temperature}\u00B0$tempUnit"
+        tvTomorrowLow.text = "${tomorrowForecast.low?.temperature}\u00B0$tempUnit"
+        tvTomorrowShortForecast.text = "${tomorrowForecast.high?.shortForecast}"
+        Picasso.get().load(tomorrowForecast.high?.icon).into(ivTomorrowIcon)
+
+        viewPager.adapter?.notifyDataSetChanged()
+
+        rlTomorrowFragment.visibility = VISIBLE
     }
 
     private fun search(){
