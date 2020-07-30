@@ -38,19 +38,6 @@ class SevenDayViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         itemView.tvHighTemp.text = "$highTemp\u00B0$tempUnit"
         itemView.tvLowTemp.text = "$lowTemp\u00B0$tempUnit"
 
-//        if (dayForecast.periods.size > 1) {
-//            itemView.tvHighTemp.text = "${dayForecast.periods[0].temperature.toString()}\u00B0${dayForecast.periods[0].temperatureUnit}"
-//            itemView.tvLowTemp.text = "${dayForecast.periods[1].temperature.toString()}\u00B0${dayForecast.periods[0].temperatureUnit}"
-//        } else {
-//            if (dayForecast.periods[0].isDaytime) {
-//                itemView.tvHighTemp.text = "${dayForecast.periods[0].temperature.toString()}\u00B0${dayForecast.periods[0].temperatureUnit}"
-//                itemView.tvLowTemp.text = "--"
-//            } else {
-//                itemView.tvHighTemp.text = "--"
-//                itemView.tvLowTemp.text = "${dayForecast.periods[0].temperature.toString()}\u00B0${dayForecast.periods[0].temperatureUnit}"
-//            }
-//        }
-
         Picasso.get().load(iconPath).into(itemView.ivForecastIcon)
     }
 }

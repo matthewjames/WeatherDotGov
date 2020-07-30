@@ -9,6 +9,8 @@
     android:padding="16dp"
     tools:context=".view.TodayFragment">
 
+
+
     <TextView
         android:id="@+id/tvTodayDateTime"
         android:layout_width="wrap_content"
@@ -51,7 +53,7 @@
         android:textSize="72sp" />
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/ivTodayIcon"
         android:maxHeight="100dp"
         android:maxWidth="100dp"
         android:minWidth="100dp"
@@ -68,9 +70,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="ShortForecast"
-        android:layout_below="@+id/imageView"
-        android:layout_alignEnd="@id/imageView"
-        android:layout_alignStart="@id/imageView"
+        android:layout_below="@+id/ivTodayIcon"
+        android:layout_alignEnd="@id/ivTodayIcon"
+        android:layout_alignStart="@id/ivTodayIcon"
         android:textAlignment="center"
         android:textSize="16sp"/>
 

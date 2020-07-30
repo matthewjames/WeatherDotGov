@@ -17,12 +17,13 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class SearchActivityRepository(val application: Application) {
+class SearchActivityRepository {
     val TAG = "SearchActivityRepo"
     val isLoading = MutableLiveData<Boolean>()
-    val hourlyForecastData = MutableLiveData<ForecastData>()
-    val sevenDayForecastData = MutableLiveData<ForecastData>()
-    val forecastDataBundle = MutableLiveData<ForecastDataBundle>()
+
+    init {
+        isLoading.value = false
+    }
 
     private val retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)

@@ -6,7 +6,7 @@ import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
 
-const val BASE_URL = "https://api.weather.gov/"
+const val BASE_URL = "https://api.weather.gov"
 
 interface WeatherDotGovNetwork {
     @GET("points/{coordinates}")

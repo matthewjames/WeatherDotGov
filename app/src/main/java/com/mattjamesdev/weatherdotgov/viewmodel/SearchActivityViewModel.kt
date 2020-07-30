@@ -14,23 +14,19 @@ import kotlin.ClassCastException
 
 class SearchActivityViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "SearchActivityVM"
-    private val repository = SearchActivityRepository(application)
-    val isLoading: LiveData<Boolean>
+    private val repository = SearchActivityRepository()
+    val isLoading: MutableLiveData<Boolean> = MutableLiveData(false)
     val dailyForecastData: MutableLiveData<MutableList<DayForecast>> = MutableLiveData()
-
-    init {
-        this.isLoading = repository.isLoading
-    }
 
     fun changeState(){
         repository.changeState()
     }
 
     fun getForecastData(coords : String){
-
         GlobalScope.launch(Dispatchers.Main){
-            val locationData: Location = withContext(Dispatchers.IO){ repository.getLocationProperties(coords) }
+            isLoading.value = true
 
+            val locationData: Location = withContext(Dispatchers.IO){ repository.getLocationProperties(coords) }
             Log.d(TAG, "Location data: $locationData")
 
             val wfo = locationData.properties.gridId
@@ -46,8 +42,10 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
             Log.d(TAG, "sevenDayForecastData: ${sevenDayForecastData.await()}")
 
             dailyForecastData.value = combineLatestData(hourlyForecastData.await(), sevenDayForecastData.await())
-
             Log.d(TAG, "dailyForecastData: $dailyForecastData")
+
+
+            isLoading.value = false
         }
     }
 
@@ -132,6 +130,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
             dayForecast.tempUnit = dayHourlyPeriodList[0].temperatureUnit
         }
 
+        Log.d(TAG,"combineLatestData() returning $dayForecastList")
         return dayForecastList
     }
 }

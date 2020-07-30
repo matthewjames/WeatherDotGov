@@ -1,6 +1,6 @@
 package com.mattjamesdev.weatherdotgov.network.model
 
-data class ForecastData(
+class ForecastData(
     val properties: PropertiesY
 )
 
