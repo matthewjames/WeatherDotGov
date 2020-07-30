@@ -10,20 +10,16 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.network.model.DayForecast
@@ -35,11 +31,6 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_search.*
 import kotlinx.android.synthetic.main.fragment_seven_day.*
 import kotlinx.android.synthetic.main.fragment_today.*
-import kotlinx.android.synthetic.main.item_sevenday.*
-import kotlinx.android.synthetic.main.item_sevenday.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -125,12 +116,16 @@ class SearchActivity : AppCompatActivity() {
             val currentForecast: Period = todayForecast.hourly?.get(0)!!
             val tempUnit = todayForecast.tempUnit
 
-//            tvTodayDateTime.text = currentTime
-//            tvTodayHigh.text = "${todayForecast.high?.temperature}\u00B0$tempUnit"
-//            tvLowTemp.text = "${todayForecast.low?.temperature}\u00B0$tempUnit"
-//            tvCurrentTemp.text = "${currentForecast.temperature}\u00B0$tempUnit"
-//            tvShortForecast.text = "${currentForecast.shortForecast}"
-//            Picasso.get().load(currentForecast.icon).into(ivTodayIcon)
+
+            tvTodayDateTime.text = currentTime
+            tvTodayHigh.text = "${todayForecast.high?.temperature}\u00B0$tempUnit"
+            tvTodayLow.text = "${todayForecast.low?.temperature}\u00B0$tempUnit"
+            tvCurrentTemp.text = "${currentForecast.temperature}\u00B0$tempUnit"
+            tvTodayShortForecast.text = "${currentForecast.shortForecast}"
+            Picasso.get().load(currentForecast.icon).into(ivTodayIcon)
+            viewPager.adapter?.notifyDataSetChanged()
+
+            rlTodayFragment.visibility = VISIBLE
 
             // populate Tomorrow tab with data
 

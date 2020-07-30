@@ -5,8 +5,8 @@
     android:id="@+id/rlTodayFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#80D8FF"
     android:padding="16dp"
+    android:visibility="invisible"
     tools:context=".view.TodayFragment">
 
 
