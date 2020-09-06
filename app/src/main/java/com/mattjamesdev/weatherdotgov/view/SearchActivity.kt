@@ -1,15 +1,16 @@
 package com.mattjamesdev.weatherdotgov.view
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.View.GONE
-import android.view.View.VISIBLE
+import android.view.View.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
@@ -18,9 +19,16 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.AutocompleteActivity
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.tabs.TabLayoutMediator
+import com.mattjamesdev.weatherdotgov.Keys
 import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.network.model.DayForecast
 import com.mattjamesdev.weatherdotgov.network.model.Period
@@ -40,19 +48,20 @@ import java.util.*
 class SearchActivity : AppCompatActivity() {
     private val TAG = "SearchActivity"
     private val LOCATION_REQUEST_CODE = 1310
+    private val AUTO_COMPLETE_REQUEST_CODE = 503
+    private lateinit var geocoder: Geocoder
     private lateinit var viewModel: SearchActivityViewModel
     private lateinit var locationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
-
+        geocoder = Geocoder(this, Locale.getDefault())
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
         initViewModelComponents()
-        initSearchButtons()
+        initSearchBar()
         initTabLayout()
-//        initCurrentForecast()
     }
 
     override fun onStart() {
@@ -68,6 +77,7 @@ class SearchActivity : AppCompatActivity() {
         locationClient.lastLocation.addOnSuccessListener {location: Location? ->
             if (location != null){
                 Log.d(TAG, "Location coordinates: ${location.latitude}, ${location.longitude}")
+                etLocation.setText(getCityStateFromCoords(location.latitude, location.longitude))
                 viewModel.getForecastData("${location.latitude},${location.longitude}")
             } else {
                 Log.d(TAG, "Location was null")
@@ -84,11 +94,7 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if(requestCode == LOCATION_REQUEST_CODE){
             if(grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 // Permission granted
@@ -129,28 +135,16 @@ class SearchActivity : AppCompatActivity() {
         val tabTitles = listOf("Today", "Tomorrow", "7 Day")
         val pagerAdapter = PagerAdapter(this, tabLayout.tabCount)
         viewPager.adapter = pagerAdapter
-//        viewPager.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
         viewPager.offscreenPageLimit = pagerAdapter.numberOfTabs
 
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = tabTitles[position]
             viewPager.setCurrentItem(tab.position, true)
         }.attach()
-
-//        tabLayout.addOnTabSelectedListener(object: TabLayout.OnTabSelectedListener{
-//            override fun onTabSelected(p0: TabLayout.Tab?) {
-//                viewPager.currentItem = p0!!.position
-//            }
-//
-//            override fun onTabReselected(p0: TabLayout.Tab?) {
-//            }
-//
-//            override fun onTabUnselected(p0: TabLayout.Tab?) {
-//            }
-//        })
     }
 
-    private fun initSearchButtons(){
+    private fun initSearchBar(){
+        etLocation.focusable = NOT_FOCUSABLE
 
         // search bar button
         ivSearch.setOnClickListener {
@@ -166,10 +160,37 @@ class SearchActivity : AppCompatActivity() {
                 false
             }
         }
+
+        // autocomplete functionality using Places SDK
+
+        Places.initialize(applicationContext, Keys.apiKey())
+
+        etLocation.setOnClickListener {
+            val fieldList = arrayListOf(Place.Field.LAT_LNG)
+            val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fieldList).build(this)
+            startActivityForResult(intent, AUTO_COMPLETE_REQUEST_CODE)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if(requestCode == AUTO_COMPLETE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
+            val place: Place = Autocomplete.getPlaceFromIntent(data!!)
+            val city: String = geocoder.getFromLocation(place.latLng!!.latitude, place.latLng!!.longitude, 1)[0].locality.toString()
+            val state: String = geocoder.getFromLocation(place.latLng!!.latitude, place.latLng!!.longitude, 1)[0].adminArea.toString()
+            val cityState: String = "$city, $state"
+            Log.d(TAG, "onActivityResult: locality = $city, subLocality = $state")
+
+            etLocation.setText(cityState)
+            search()
+        } else if (resultCode == AutocompleteActivity.RESULT_ERROR){
+            val status: Status = Autocomplete.getStatusFromIntent(data!!)
+            Toast.makeText(applicationContext, "Error: ${status.statusMessage}", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun updateTodayTab(todayForecast: DayForecast){
-        // populate Today tab with data
         val currentDateTime: String = DateTimeFormatter.ofPattern("MMMM d, h:mm a", Locale.getDefault())
                                                         .format(LocalDateTime.now())
         val currentForecast: Period = todayForecast.hourly?.get(0)!!
@@ -204,7 +225,7 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun search(){
-        val coords = getCoords()
+        val coords = getCoords(etLocation.text.toString())
 
         viewModel.getForecastData(coords)
 
@@ -217,14 +238,24 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-    private fun getCoords() : String {
-        val geocoder = Geocoder(this, Locale.getDefault())
-        val location = geocoder.getFromLocationName(etLocation.text.toString(), 1)
+    private fun getCityStateFromCoords(lat: Double, long: Double) : String {
+        val cityState = geocoder.getFromLocation(lat, long, 1)
+
+        if(cityState.size > 0){
+            Log.d(TAG, "City, State: ${cityState.get(0).locality}, ${cityState.get(0).adminArea}")
+            return "${cityState.get(0).locality}, ${cityState.get(0).adminArea}"
+        } else {
+            return "Unknown Location"
+        }
+
+    }
+
+    private fun getCoords(inputText: String) : String {
+        val location = geocoder.getFromLocationName(inputText, 1)
 
         if (location.size > 0) {
             val latitude = location.get(0).latitude
             val longitude = location.get(0).longitude
-            val city = location.get(0).locality
 
             return "$latitude,$longitude"
         } else {

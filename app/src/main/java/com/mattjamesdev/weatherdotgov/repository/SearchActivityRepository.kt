@@ -25,8 +25,11 @@ class SearchActivityRepository {
         isLoading.value = false
     }
 
+    private val client = OkHttpClient.Builder().cache(null).build()
+
     private val retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
+        .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 

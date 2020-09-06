@@ -41,31 +41,38 @@
 
         <TextView
             android:id="@+id/tvHighTemp"
-            android:layout_width="wrap_content"
+            android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:text="High"
+            android:textAlignment="viewStart"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvLowTemp"
-            android:layout_width="wrap_content"
+            android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:layout_below="@id/tvHighTemp"
-            android:text="Low" />
+            android:text="Low"
+            android:textAlignment="viewStart" />
     </RelativeLayout>
 
 
-
-    <ImageView
-        android:id="@+id/ivForecastIcon"
-        android:maxHeight="60dp"
-        android:minHeight="60dp"
-        android:maxWidth="60dp"
-        android:minWidth="60dp"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cvTodayIcon"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        app:cardCornerRadius="30dp"
         android:layout_marginEnd="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:layout_toStartOf="@id/rvTempContainer"
-        android:layout_centerVertical="true"
-        app:srcCompat="@drawable/ic_image_black_24dp" />
+        android:layout_centerVertical="true">
+
+        <ImageView
+            android:id="@+id/ivForecastIcon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            app:srcCompat="@drawable/ic_image_black_24dp" />
+    </androidx.cardview.widget.CardView>
+
+
 </RelativeLayout>

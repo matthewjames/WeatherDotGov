@@ -57,11 +57,10 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
         Log.d(TAG, "combineLatestData() entered")
 
         // parse hourly data into DayForecast objects and add to dailyData
-        val hourlyData = hourlyForecastData
-        val sevenDayData = sevenDayForecastData
-        var hourlyPeriods: List<Period> = hourlyData.properties.periods
-        var sevenDayPeriods: List<Period> = sevenDayData.properties.periods
+        var hourlyPeriods: List<Period> = hourlyForecastData.properties.periods
+        var sevenDayPeriods: List<Period> = sevenDayForecastData.properties.periods
 
+        // initialize list of empty dayForecasts
         val dayForecastList = MutableList(7){index -> DayForecast()}
 
         // initialize each DayForecast
@@ -84,7 +83,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                  *      slice list from j -> end of list
                  */
 
-                if(dayForecast.date == hourlyPeriods[j].startTime.substring(0..9)){
+                if(dayForecast.date == hourlyPeriods[j].startTime.substring(0,10)){
                     dayHourlyPeriodList.add(hourlyPeriods[j])
                 } else {
                     dayForecast.hourly = dayHourlyPeriodList
@@ -116,6 +115,8 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                     print(e.printStackTrace())
                 }
             } else {
+                dayForecast.hourly!![0].name = sevenDayPeriods[0].name
+
                 dayForecast.high = dayForecast.hourly!![0]
                 dayForecast.low = sevenDayPeriods[0]
                 try {

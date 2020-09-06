@@ -19,7 +19,7 @@ data class Period(
     val endTime: String,
     val icon: String,
     val isDaytime: Boolean,
-    val name: String,
+    var name: String,
     val number: Int,
     val shortForecast: String,
     val startTime: String,
