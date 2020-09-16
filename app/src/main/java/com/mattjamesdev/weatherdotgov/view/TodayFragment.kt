@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 
 import com.mattjamesdev.weatherdotgov.R
+import kotlinx.android.synthetic.main.fragment_today.view.*
 
 
 class TodayFragment : Fragment() {
@@ -18,5 +19,4 @@ class TodayFragment : Fragment() {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_today, container, false)
     }
-
 }

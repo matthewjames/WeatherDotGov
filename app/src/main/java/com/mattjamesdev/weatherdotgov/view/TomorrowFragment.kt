@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 
 import com.mattjamesdev.weatherdotgov.R
+import kotlinx.android.synthetic.main.fragment_tomorrow.view.*
 
 /**
  * A simple [Fragment] subclass.
@@ -21,4 +22,7 @@ class TomorrowFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_tomorrow, container, false)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        view.tomorrowHourlyChart.invalidate()
+    }
 }

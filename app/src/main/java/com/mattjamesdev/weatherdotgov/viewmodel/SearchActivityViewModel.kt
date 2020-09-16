@@ -1,15 +1,17 @@
 package com.mattjamesdev.weatherdotgov.viewmodel
 
 import android.app.Application
-import android.nfc.Tag
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.*
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.mattjamesdev.weatherdotgov.network.model.DayForecast
 import com.mattjamesdev.weatherdotgov.network.model.ForecastData
 import com.mattjamesdev.weatherdotgov.network.model.Location
 import com.mattjamesdev.weatherdotgov.network.model.Period
 import com.mattjamesdev.weatherdotgov.repository.SearchActivityRepository
 import kotlinx.coroutines.*
+import retrofit2.HttpException
 import kotlin.ClassCastException
 
 class SearchActivityViewModel(application: Application) : AndroidViewModel(application) {
@@ -17,33 +19,36 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     private val repository = SearchActivityRepository()
     val isLoading: MutableLiveData<Boolean> = MutableLiveData(false)
     val dailyForecastData: MutableLiveData<MutableList<DayForecast>> = MutableLiveData()
+    val hourlyForecastData: MutableLiveData<ForecastData> = MutableLiveData()
 
-    fun changeState(){
-        repository.changeState()
-    }
 
     fun getForecastData(coords : String){
         GlobalScope.launch(Dispatchers.Main){
             isLoading.value = true
 
-            val locationData: Location = withContext(Dispatchers.IO){ repository.getLocationProperties(coords) }
-            Log.d(TAG, "Location data: $locationData")
+            try {
+                val locationData: Location = withContext(Dispatchers.IO){ repository.getLocationProperties(coords) }
+                Log.d(TAG, "Location data: $locationData")
 
-            val wfo = locationData.properties.gridId
-            val x = locationData.properties.gridX
-            val y = locationData.properties.gridY
+                val wfo = locationData.properties.gridId
+                val x = locationData.properties.gridX
+                val y = locationData.properties.gridY
 
-            Log.d(TAG, "Fetching hourly forecast data")
-            val hourlyForecastData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getHourlyForecastData(wfo, x, y) }
-            Log.d(TAG, "hourlyForecastData: ${hourlyForecastData.await()}")
+                Log.d(TAG, "Fetching hourly forecast data")
+                val hourlyData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getHourlyForecastData(wfo, x, y) }
+//            Log.d(TAG, "hourlyForecastData: ${hourlyData.await()}")
+                hourlyForecastData.value = hourlyData.await()
 
-            Log.d(TAG, "Fetching seven day forecast data")
-            val sevenDayForecastData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getSevenDayForecastData(wfo, x, y) }
-            Log.d(TAG, "sevenDayForecastData: ${sevenDayForecastData.await()}")
+                Log.d(TAG, "Fetching seven day forecast data")
+                val sevenDayData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getSevenDayForecastData(wfo, x, y) }
+//            Log.d(TAG, "sevenDayForecastData: ${sevenDayData.await()}")
 
-            dailyForecastData.value = combineLatestData(hourlyForecastData.await(), sevenDayForecastData.await())
-            Log.d(TAG, "dailyForecastData: $dailyForecastData")
-
+                dailyForecastData.value = combineLatestData(hourlyData.await(), sevenDayData.await())
+//            Log.d(TAG, "dailyForecastData: $dailyForecastData")
+            } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().log("$TAG Exception thrown: $e")
+                TODO("Add Toast/Snackbar message to user: 'Error loading forecast. Try Again.' with retry button")
+            }
 
             isLoading.value = false
         }
@@ -87,7 +92,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                     dayHourlyPeriodList.add(hourlyPeriods[j])
                 } else {
                     dayForecast.hourly = dayHourlyPeriodList
-                    hourlyPeriods = hourlyPeriods.slice(j..hourlyPeriods.size-1) as MutableList<Period>
+                    hourlyPeriods = hourlyPeriods.slice(j until hourlyPeriods.size) as MutableList<Period>
                     break
                 }
             }
@@ -110,7 +115,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                 dayForecast.high = sevenDayPeriods[0]
                 dayForecast.low = sevenDayPeriods[1]
                 try {
-                    sevenDayPeriods = sevenDayPeriods.slice(2..sevenDayPeriods.size-1)
+                    sevenDayPeriods = sevenDayPeriods.slice(2 until sevenDayPeriods.size)
                 } catch (e: ClassCastException) {
                     print(e.printStackTrace())
                 }
@@ -120,7 +125,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                 dayForecast.high = dayForecast.hourly!![0]
                 dayForecast.low = sevenDayPeriods[0]
                 try {
-                    sevenDayPeriods = sevenDayPeriods.slice(1..sevenDayPeriods.size-1)
+                    sevenDayPeriods = sevenDayPeriods.slice(1 until sevenDayPeriods.size)
                 } catch (e: ClassCastException) {
                     print(e.printStackTrace())
                 }
@@ -131,7 +136,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
             dayForecast.tempUnit = dayHourlyPeriodList[0].temperatureUnit
         }
 
-        Log.d(TAG,"combineLatestData() returning $dayForecastList")
+//        Log.d(TAG,"combineLatestData() returning $dayForecastList")
         return dayForecastList
     }
 }
