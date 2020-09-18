@@ -1,10 +1,11 @@
 <resources>
-    <string name="app_name">WeatherDotGov</string>
+    <string name="app_name">Weather DotGov</string>
     <string name="default_search_bar">City, State or Zip</string>
     <string name="tab_today">Today</string>
     <string name="tab_tomorrow">Tomorrow</string>
     <string name="tab_7_day">7 Day</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="high_temp">High: %d°%s</string>
+    <string name="low_temp">Low: %d°%s</string>
+    <string name="temp">%d°%s</string>
 </resources>

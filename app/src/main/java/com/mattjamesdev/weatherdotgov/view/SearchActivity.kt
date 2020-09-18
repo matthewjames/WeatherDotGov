@@ -17,7 +17,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.mikephil.charting.charts.LineChart
@@ -70,18 +69,15 @@ class SearchActivity : AppCompatActivity() {
         geocoder = Geocoder(this, Locale.getDefault())
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        initViewModelComponents()
-        initSearchBar()
-        initTabLayout()
-    }
-
-    override fun onStart() {
-        super.onStart()
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
             getLastLocation()
         } else {
             requestLocationPermission()
         }
+
+        initViewModelComponents()
+        initSearchBar()
+        initTabLayout()
     }
 
     private fun getLastLocation(){
@@ -107,7 +103,7 @@ class SearchActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if(requestCode == LOCATION_REQUEST_CODE){
-            if(grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 // Permission granted
                 getLastLocation()
             } else {
@@ -121,7 +117,7 @@ class SearchActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this).get(SearchActivityViewModel::class.java)
 
         // progress bar
-        viewModel.isLoading.observe(this, Observer {
+        viewModel.isLoading.observe(this, {
             if(it){
                 progressBar.visibility = VISIBLE
             } else {
@@ -129,10 +125,10 @@ class SearchActivity : AppCompatActivity() {
             }
         })
 
-        viewModel.dailyForecastData.observe(this, Observer {
+        viewModel.dailyForecastData.observe(this, {
 
-            updateTodayTab(it.get(0))
-            updateTomorrowTab(it.get(1))
+            updateTodayTab(it[0])
+            updateTomorrowTab(it[1])
 
             // Populate 7 Day tab with data
             rvSevenDay.apply {
@@ -141,8 +137,12 @@ class SearchActivity : AppCompatActivity() {
             }
         })
 
-        viewModel.hourlyForecastData.observe(this, Observer {
+        viewModel.hourlyForecastData.observe(this, {
             hourlyForecastData = it
+        })
+
+        viewModel.errorMessage.observe(this, {
+            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
         })
     }
 
@@ -192,8 +192,9 @@ class SearchActivity : AppCompatActivity() {
 
         if(requestCode == AUTO_COMPLETE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
             val place: Place = Autocomplete.getPlaceFromIntent(data!!)
-            val city: String = geocoder.getFromLocation(place.latLng!!.latitude, place.latLng!!.longitude, 1)[0].locality.toString()
-            val state: String = geocoder.getFromLocation(place.latLng!!.latitude, place.latLng!!.longitude, 1)[0].adminArea.toString()
+            val result = geocoder.getFromLocation(place.latLng!!.latitude, place.latLng!!.longitude, 1)
+            val city: String = result[0].locality.toString()
+            val state: String = result[0].adminArea.toString()
             val cityState = "$city, $state"
             Log.d(TAG, "onActivityResult: locality = $city, subLocality = $state")
 
@@ -212,10 +213,10 @@ class SearchActivity : AppCompatActivity() {
         val tempUnit = todayForecast.tempUnit
 
         tvTodayDateTime.text = currentDateTime
-        tvTodayHigh.text = "${todayForecast.high?.temperature}\u00B0$tempUnit"
-        tvTodayLow.text = "${todayForecast.low?.temperature}\u00B0$tempUnit"
-        tvCurrentTemp.text = "${currentForecast.temperature}\u00B0$tempUnit"
-        tvTodayShortForecast.text = "${currentForecast.shortForecast}"
+        tvTodayHigh.text = getString(R.string.high_temp ,todayForecast.high?.temperature, tempUnit)
+        tvTodayLow.text = getString(R.string.low_temp, todayForecast.low?.temperature, tempUnit)
+        tvCurrentTemp.text = getString(R.string.temp, currentForecast.temperature, tempUnit)
+        tvTodayShortForecast.text = currentForecast.shortForecast
         Picasso.get().load(currentForecast.icon).into(ivTodayIcon)
 
         Log.d(TAG, "hourlyForecastData: ${hourlyForecastData.properties.periods.subList(0, 24)}")
@@ -241,9 +242,9 @@ class SearchActivity : AppCompatActivity() {
         val tempUnit = tomorrowForecast.tempUnit
 
         tvTomorrowDate.text = tomorrowDate
-        tvTomorrowHigh.text = "${tomorrowForecast.high?.temperature}\u00B0$tempUnit"
-        tvTomorrowLow.text = "${tomorrowForecast.low?.temperature}\u00B0$tempUnit"
-        tvTomorrowShortForecast.text = "${tomorrowForecast.high?.shortForecast}"
+        tvTomorrowHigh.text = getString(R.string.high_temp, tomorrowForecast.high?.temperature, tempUnit)
+        tvTomorrowLow.text = getString(R.string.low_temp, tomorrowForecast.low?.temperature, tempUnit)
+        tvTomorrowShortForecast.text = tomorrowForecast.high?.shortForecast
         Picasso.get().load(tomorrowForecast.high?.icon).into(ivTomorrowIcon)
 
         val periods = tomorrowForecast.hourly!!
@@ -276,8 +277,8 @@ class SearchActivity : AppCompatActivity() {
         val cityState = geocoder.getFromLocation(lat, long, 1)
 
         return if(cityState.size > 0){
-            Log.d(TAG, "City, State: ${cityState.get(0).locality}, ${cityState.get(0).adminArea}")
-            "${cityState.get(0).locality}, ${cityState.get(0).adminArea}"
+            Log.d(TAG, "City, State: ${cityState[0].locality}, ${cityState[0].adminArea}")
+            "${cityState[0].locality}, ${cityState[0].adminArea}"
         } else {
             "Unknown Location"
         }
@@ -287,8 +288,8 @@ class SearchActivity : AppCompatActivity() {
         val location = geocoder.getFromLocationName(inputText, 1)
 
         return if (location.size > 0) {
-            val latitude = location.get(0).latitude
-            val longitude = location.get(0).longitude
+            val latitude = location[0].latitude
+            val longitude = location[0].longitude
 
             "$latitude,$longitude"
         } else {
@@ -303,7 +304,7 @@ class SearchActivity : AppCompatActivity() {
         val fromFormat = DateTimeFormatter.ISO_OFFSET_DATE_TIME
         val toFormat = DateTimeFormatter.ofPattern("h a")
 
-        for(i in 0 until periods.size){
+        for(i in periods.indices){
             val label = LocalDateTime.parse(periods[i].startTime, fromFormat).format(toFormat)
             Log.d(TAG, "Label $label created from ${periods[i].startTime}")
 
@@ -322,23 +323,16 @@ class SearchActivity : AppCompatActivity() {
     private fun createLineChartDataSet(periods: List<Period>) : LineDataSet {
         val entries = ArrayList<Entry>()
 
-        for(i in 0 until periods.size){
+        for(i in periods.indices){
             // parse hourly forecast data into entries for data set
             // entries parsed as (hour, temperature)
 
-            val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
-            val hour = LocalDateTime.parse(periods[i].startTime, formatter)
-                .toEpochSecond(ZoneOffset.systemDefault().rules.getOffset(LocalDateTime.now()))
-//                .toFloat() + 1.0f
-//            Log.d(TAG, "Parsed ${periods[i].startTime} to long: $hour")
-//            Log.d(TAG, "Parsed ${period.startTime} to double: ${hour.toDouble()}")
-//            Log.d(TAG, "Parsed ${periods[i].startTime} to float: ${hour.toFloat()}")
             val temperature = periods[i].temperature.toFloat()
             entries.add(Entry(i.toFloat(), temperature))
         }
 
         val lineDataSet = LineDataSet(entries, "Temperature")
-        lineDataSet.setHighlightEnabled(false)
+        lineDataSet.isHighlightEnabled = false
         lineDataSet.setDrawFilled(true)
         lineDataSet.fillDrawable = ContextCompat.getDrawable(this, R.drawable.gradient_temp_chart)
 
@@ -379,8 +373,8 @@ class SearchActivity : AppCompatActivity() {
         chart.xAxis.yOffset = 10f
 
         chart.setNoDataText("No temperature values!")
-        chart.legend.setEnabled(false)
-        chart.description.setEnabled(false)
+        chart.legend.isEnabled = false
+        chart.description.isEnabled = false
         chart.setTouchEnabled(false)
         chart.setViewPortOffsets(0f,100.0f,0f,100.0f)
 //        chart.setHardwareAccelerationEnabled(false)

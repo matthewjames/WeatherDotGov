@@ -2,8 +2,8 @@ package com.mattjamesdev.weatherdotgov.viewmodel
 
 import android.app.Application
 import android.util.Log
-import android.widget.Toast
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.mattjamesdev.weatherdotgov.network.model.DayForecast
 import com.mattjamesdev.weatherdotgov.network.model.ForecastData
@@ -11,8 +11,6 @@ import com.mattjamesdev.weatherdotgov.network.model.Location
 import com.mattjamesdev.weatherdotgov.network.model.Period
 import com.mattjamesdev.weatherdotgov.repository.SearchActivityRepository
 import kotlinx.coroutines.*
-import retrofit2.HttpException
-import kotlin.ClassCastException
 
 class SearchActivityViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "SearchActivityVM"
@@ -20,7 +18,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     val isLoading: MutableLiveData<Boolean> = MutableLiveData(false)
     val dailyForecastData: MutableLiveData<MutableList<DayForecast>> = MutableLiveData()
     val hourlyForecastData: MutableLiveData<ForecastData> = MutableLiveData()
-
+    val errorMessage: MutableLiveData<String> = MutableLiveData()
 
     fun getForecastData(coords : String){
         GlobalScope.launch(Dispatchers.Main){
@@ -46,8 +44,8 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                 dailyForecastData.value = combineLatestData(hourlyData.await(), sevenDayData.await())
 //            Log.d(TAG, "dailyForecastData: $dailyForecastData")
             } catch (e: Exception) {
-                FirebaseCrashlytics.getInstance().log("$TAG Exception thrown: $e")
-                TODO("Add Toast/Snackbar message to user: 'Error loading forecast. Try Again.' with retry button")
+                FirebaseCrashlytics.getInstance().log("$TAG: Exception thrown: $e")
+                errorMessage.value = "Error loading forecast data. Try again."
             }
 
             isLoading.value = false
@@ -55,10 +53,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     }
 
     // parses the hourly and seven day forecast data into MutableList<DayForecast>
-    private fun combineLatestData(
-        hourlyForecastData: ForecastData,
-        sevenDayForecastData: ForecastData
-    ): MutableList<DayForecast> {
+    private fun combineLatestData(hourlyForecastData: ForecastData, sevenDayForecastData: ForecastData): MutableList<DayForecast> {
         Log.d(TAG, "combineLatestData() entered")
 
         // parse hourly data into DayForecast objects and add to dailyData

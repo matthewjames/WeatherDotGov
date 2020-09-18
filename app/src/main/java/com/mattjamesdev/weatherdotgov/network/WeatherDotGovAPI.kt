@@ -2,13 +2,12 @@ package com.mattjamesdev.weatherdotgov.network
 
 import com.mattjamesdev.weatherdotgov.network.model.ForecastData
 import com.mattjamesdev.weatherdotgov.network.model.Location
-import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
 
 const val BASE_URL = "https://api.weather.gov"
 
-interface WeatherDotGovNetwork {
+interface WeatherDotGovAPI {
     @GET("points/{coordinates}")
     suspend fun getProperties(@Path("coordinates") key: String) : Location
 
