@@ -6,5 +6,6 @@ object Keys {
         System.loadLibrary("native-lib")
     }
 
-    external fun apiKey(): String
+    external fun placesKey(): String
+    external fun mapQuestKey(): String
 }

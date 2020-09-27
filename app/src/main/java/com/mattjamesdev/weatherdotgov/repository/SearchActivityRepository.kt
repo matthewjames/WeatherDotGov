@@ -1,7 +1,6 @@
 package com.mattjamesdev.weatherdotgov.repository
 
-import androidx.lifecycle.MutableLiveData
-import com.mattjamesdev.weatherdotgov.network.BASE_URL
+import com.mattjamesdev.weatherdotgov.network.WEATHER_DOT_GOV_BASE_URL
 import com.mattjamesdev.weatherdotgov.network.WeatherDotGovAPI
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -9,24 +8,24 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class SearchActivityRepository {
     private val TAG = "SearchActivityRepo"
-    private val isLoading = MutableLiveData<Boolean>()
 
-    init {
-        isLoading.value = false
+    private val weatherDotGovService = getWeatherDotGovService() as WeatherDotGovAPI
+
+    suspend fun getForecastArea(latitude: Double, longitude: Double) = weatherDotGovService.getForecastArea(latitude, longitude)
+
+    suspend fun getHourlyForecastData(wfo: String, x: Int, y: Int) = weatherDotGovService.getHourlyForecastData(wfo, x, y)
+
+    suspend fun getSevenDayForecastData(wfo: String, x: Int, y: Int) = weatherDotGovService.get7DayForecastData(wfo, x, y)
+
+    private fun getWeatherDotGovService() : Any {
+        val client = OkHttpClient.Builder().cache(null).build()
+
+        val retrofit: Retrofit = Retrofit.Builder()
+            .baseUrl(WEATHER_DOT_GOV_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        return retrofit.create(WeatherDotGovAPI::class.java)
     }
-
-    private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .client(OkHttpClient.Builder().cache(null).build())
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    private val service = retrofit.create(WeatherDotGovAPI::class.java)
-
-    suspend fun getLocationProperties(coords: String) = service.getProperties(coords)
-
-    suspend fun getHourlyForecastData(wfo: String, x: Int, y: Int) = service.getHourlyForecastData(wfo, x, y)
-
-    suspend fun getSevenDayForecastData(wfo: String, x: Int, y: Int) = service.get7DayForecastData(wfo, x, y)
-
 }

@@ -58,15 +58,15 @@ class SearchActivity : AppCompatActivity() {
     private val TAG = "SearchActivity"
     private val LOCATION_REQUEST_CODE = 1310
     private val AUTO_COMPLETE_REQUEST_CODE = 503
+    private var mLatitude: Double = 0.0
+    private var mLongitude: Double = 0.0
     private lateinit var hourlyForecastData: ForecastData
-    private lateinit var geocoder: Geocoder
     private lateinit var viewModel: SearchActivityViewModel
     private lateinit var locationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
-        geocoder = Geocoder(this, Locale.getDefault())
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
@@ -83,9 +83,10 @@ class SearchActivity : AppCompatActivity() {
     private fun getLastLocation(){
         locationClient.lastLocation.addOnSuccessListener {location: Location? ->
             if (location != null){
-                Log.d(TAG, "Location coordinates: ${location.latitude}, ${location.longitude}")
-                etLocation.setText(getCityStateFromCoords(location.latitude, location.longitude))
-                viewModel.getForecastData("${location.latitude},${location.longitude}")
+                mLatitude = location.latitude
+                mLongitude = location.longitude
+//                Log.d(TAG, "Location coordinates: $mLatitude, $mLongitude")
+                viewModel.getForecastData(mLatitude, mLongitude)
             } else {
                 Log.d(TAG, "Location was null")
             }
@@ -135,6 +136,8 @@ class SearchActivity : AppCompatActivity() {
                 layoutManager = LinearLayoutManager(this.context)
                 adapter = SevenDayAdapter(it)
             }
+
+            viewPager.setCurrentItem(0, true)
         })
 
         viewModel.hourlyForecastData.observe(this, {
@@ -144,10 +147,18 @@ class SearchActivity : AppCompatActivity() {
         viewModel.errorMessage.observe(this, {
             Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
         })
+
+        viewModel.cityState.observe(this, {
+            etLocation.setText(it)
+        })
     }
 
     private fun initTabLayout(){
-        val tabTitles = listOf("Today", "Tomorrow", "7 Day")
+        val tabTitles = listOf(
+            getString(R.string.tab_today),
+            getString(R.string.tab_tomorrow),
+            getString(R.string.tab_7_day)
+        )
         val pagerAdapter = PagerAdapter(this, tabLayout.tabCount)
         viewPager.adapter = pagerAdapter
         viewPager.offscreenPageLimit = pagerAdapter.numberOfTabs
@@ -163,13 +174,13 @@ class SearchActivity : AppCompatActivity() {
 
         // search bar button
         ivSearch.setOnClickListener {
-            search()
+            search(mLatitude, mLongitude)
         }
 
         // keyboard button
         etLocation.setOnEditorActionListener { v, actionId, event ->
             if(actionId == EditorInfo.IME_ACTION_SEARCH){
-                search()
+                search(mLatitude, mLongitude)
                 true
             } else {
                 false
@@ -178,7 +189,7 @@ class SearchActivity : AppCompatActivity() {
 
         // autocomplete functionality using Places SDK
 
-        Places.initialize(applicationContext, Keys.apiKey())
+        Places.initialize(applicationContext, Keys.placesKey())
 
         etLocation.setOnClickListener {
             val fieldList = arrayListOf(Place.Field.LAT_LNG)
@@ -192,14 +203,10 @@ class SearchActivity : AppCompatActivity() {
 
         if(requestCode == AUTO_COMPLETE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
             val place: Place = Autocomplete.getPlaceFromIntent(data!!)
-            val result = geocoder.getFromLocation(place.latLng!!.latitude, place.latLng!!.longitude, 1)
-            val city: String = result[0].locality.toString()
-            val state: String = result[0].adminArea.toString()
-            val cityState = "$city, $state"
-            Log.d(TAG, "onActivityResult: locality = $city, subLocality = $state")
+            mLatitude = place.latLng!!.latitude
+            mLongitude = place.latLng!!.longitude
 
-            etLocation.setText(cityState)
-            search()
+            search(mLatitude, mLongitude)
         } else if (resultCode == AutocompleteActivity.RESULT_ERROR){
             val status: Status = Autocomplete.getStatusFromIntent(data!!)
             Toast.makeText(applicationContext, "Error: ${status.statusMessage}", Toast.LENGTH_LONG).show()
@@ -217,15 +224,17 @@ class SearchActivity : AppCompatActivity() {
         tvTodayLow.text = getString(R.string.low_temp, todayForecast.low?.temperature, tempUnit)
         tvCurrentTemp.text = getString(R.string.temp, currentForecast.temperature, tempUnit)
         tvTodayShortForecast.text = currentForecast.shortForecast
-        Picasso.get().load(currentForecast.icon).into(ivTodayIcon)
 
-        Log.d(TAG, "hourlyForecastData: ${hourlyForecastData.properties.periods.subList(0, 24)}")
+        Picasso.get().load(currentForecast.icon.replaceAfter("=", "large")).into(ivTodayIcon)
+
+//        Log.d(TAG, "hourlyForecastData: ${hourlyForecastData.properties.periods.subList(0, 24)}")
 
         val periods = hourlyForecastData.properties.periods.subList(0, 24)
         val lineData = LineData(createLineChartDataSet(periods))
 
         todayHourlyChart.data = lineData
         todayHourlyChart.notifyDataSetChanged()
+        svTodayChart.scrollTo(0,0)
 
         val labels = createXAxisLabels(periods)
 
@@ -245,11 +254,12 @@ class SearchActivity : AppCompatActivity() {
         tvTomorrowHigh.text = getString(R.string.high_temp, tomorrowForecast.high?.temperature, tempUnit)
         tvTomorrowLow.text = getString(R.string.low_temp, tomorrowForecast.low?.temperature, tempUnit)
         tvTomorrowShortForecast.text = tomorrowForecast.high?.shortForecast
-        Picasso.get().load(tomorrowForecast.high?.icon).into(ivTomorrowIcon)
+        Picasso.get().load(tomorrowForecast.high?.icon?.replaceAfter("=", "large")).into(ivTomorrowIcon)
 
         val periods = tomorrowForecast.hourly!!
         tomorrowHourlyChart.data = LineData(createLineChartDataSet(periods))
         tomorrowHourlyChart.notifyDataSetChanged()
+        svTomorrowChart.scrollTo(0,0)
 
         val labels = createXAxisLabels(periods)
 
@@ -260,42 +270,14 @@ class SearchActivity : AppCompatActivity() {
         rlTomorrowFragment.visibility = VISIBLE
     }
 
-    private fun search(){
-        val coords = getCoords(etLocation.text.toString())
-
-        viewModel.getForecastData(coords)
+    private fun search(latitude: Double, longitude: Double){
+        viewModel.getForecastData(latitude, longitude)
 
         // dismiss keyboard
         val view = currentFocus
         if (view != null) {
             val imm = this@SearchActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
-        }
-    }
-
-    private fun getCityStateFromCoords(lat: Double, long: Double) : String {
-        val cityState = geocoder.getFromLocation(lat, long, 1)
-
-        return if(cityState.size > 0){
-            Log.d(TAG, "City, State: ${cityState[0].locality}, ${cityState[0].adminArea}")
-            "${cityState[0].locality}, ${cityState[0].adminArea}"
-        } else {
-            "Unknown Location"
-        }
-    }
-
-    private fun getCoords(inputText: String) : String {
-        val location = geocoder.getFromLocationName(inputText, 1)
-
-        return if (location.size > 0) {
-            val latitude = location[0].latitude
-            val longitude = location[0].longitude
-
-            "$latitude,$longitude"
-        } else {
-            Toast.makeText(this, "No results found. Try a different location.", Toast.LENGTH_LONG).show()
-            println("Invalid location name entered")
-            ""
         }
     }
 
@@ -306,7 +288,7 @@ class SearchActivity : AppCompatActivity() {
 
         for(i in periods.indices){
             val label = LocalDateTime.parse(periods[i].startTime, fromFormat).format(toFormat)
-            Log.d(TAG, "Label $label created from ${periods[i].startTime}")
+//            Log.d(TAG, "Label $label created from ${periods[i].startTime}")
 
             labels.add(
                 if(i == 0 || i == (periods.size-1)){
@@ -377,7 +359,7 @@ class SearchActivity : AppCompatActivity() {
         chart.description.isEnabled = false
         chart.setTouchEnabled(false)
         chart.setViewPortOffsets(0f,100.0f,0f,100.0f)
-//        chart.setHardwareAccelerationEnabled(false)
+
         chart.postInvalidate()
     }
 }

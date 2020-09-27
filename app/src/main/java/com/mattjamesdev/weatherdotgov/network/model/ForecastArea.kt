@@ -1,6 +1,6 @@
 package com.mattjamesdev.weatherdotgov.network.model
 
-data class Location(
+data class ForecastArea(
     val properties: Properties
 )
 

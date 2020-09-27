@@ -41,6 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/tvTodayDateTime"
             android:layout_toEndOf="@id/tvTodayHigh"
+            android:layout_alignBaseline="@id/tvTodayHigh"
             android:text="LowTemp"
             android:textSize="16sp"/>
 
@@ -96,6 +97,7 @@
     </FrameLayout>
 
     <HorizontalScrollView
+        android:id="@+id/svTodayChart"
         android:layout_width="match_parent"
         android:layout_height="250dp"
         android:layout_alignParentStart="true"

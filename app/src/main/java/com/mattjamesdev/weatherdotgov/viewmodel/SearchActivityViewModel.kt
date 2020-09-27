@@ -5,10 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.mattjamesdev.weatherdotgov.network.model.DayForecast
-import com.mattjamesdev.weatherdotgov.network.model.ForecastData
-import com.mattjamesdev.weatherdotgov.network.model.Location
-import com.mattjamesdev.weatherdotgov.network.model.Period
+import com.mattjamesdev.weatherdotgov.network.model.*
 import com.mattjamesdev.weatherdotgov.repository.SearchActivityRepository
 import kotlinx.coroutines.*
 
@@ -19,18 +16,21 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     val dailyForecastData: MutableLiveData<MutableList<DayForecast>> = MutableLiveData()
     val hourlyForecastData: MutableLiveData<ForecastData> = MutableLiveData()
     val errorMessage: MutableLiveData<String> = MutableLiveData()
+    val cityState: MutableLiveData<String> = MutableLiveData()
 
-    fun getForecastData(coords : String){
+    fun getForecastData(latitude: Double, longtitude: Double){
         GlobalScope.launch(Dispatchers.Main){
             isLoading.value = true
 
             try {
-                val locationData: Location = withContext(Dispatchers.IO){ repository.getLocationProperties(coords) }
-                Log.d(TAG, "Location data: $locationData")
+                val forecastArea: ForecastArea = withContext(Dispatchers.IO){ repository.getForecastArea(latitude, longtitude) }
+//                Log.d(TAG, "Location data: $forecastArea")
 
-                val wfo = locationData.properties.gridId
-                val x = locationData.properties.gridX
-                val y = locationData.properties.gridY
+                val wfo = forecastArea.properties.gridId
+                val x = forecastArea.properties.gridX
+                val y = forecastArea.properties.gridY
+
+                cityState.value = "${forecastArea.properties.relativeLocation.properties.city}, ${forecastArea.properties.relativeLocation.properties.state}"
 
                 Log.d(TAG, "Fetching hourly forecast data")
                 val hourlyData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getHourlyForecastData(wfo, x, y) }
@@ -44,7 +44,9 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                 dailyForecastData.value = combineLatestData(hourlyData.await(), sevenDayData.await())
 //            Log.d(TAG, "dailyForecastData: $dailyForecastData")
             } catch (e: Exception) {
+                Log.d(TAG, "Exception thrown: $e")
                 FirebaseCrashlytics.getInstance().log("$TAG: Exception thrown: $e")
+                FirebaseCrashlytics.getInstance().sendUnsentReports()
                 errorMessage.value = "Error loading forecast data. Try again."
             }
 
@@ -54,7 +56,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
 
     // parses the hourly and seven day forecast data into MutableList<DayForecast>
     private fun combineLatestData(hourlyForecastData: ForecastData, sevenDayForecastData: ForecastData): MutableList<DayForecast> {
-        Log.d(TAG, "combineLatestData() entered")
+        Log.d(TAG, "Combining hourly and daily forecast data...")
 
         // parse hourly data into DayForecast objects and add to dailyData
         var hourlyPeriods: List<Period> = hourlyForecastData.properties.periods

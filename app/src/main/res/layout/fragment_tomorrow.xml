@@ -39,6 +39,7 @@
             android:text="LowTemp"
             android:layout_toEndOf="@id/tvTomorrowHigh"
             android:layout_below="@id/tvTomorrowDate"
+            android:layout_alignBaseline="@id/tvTomorrowHigh"
             style="@style/primaryText"
             android:textSize="16sp"/>
 
@@ -76,6 +77,7 @@
     </FrameLayout>
 
     <HorizontalScrollView
+        android:id="@+id/svTomorrowChart"
         android:layout_width="match_parent"
         android:layout_height="250dp"
         android:layout_alignParentBottom="true"
