@@ -103,8 +103,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:translationZ="2dp"
-        >
+        android:translationZ="2dp">
 
         <LinearLayout
             android:layout_width="wrap_content"

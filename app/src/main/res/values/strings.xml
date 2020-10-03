@@ -8,4 +8,5 @@
     <string name="high_temp">High: %d°%s</string>
     <string name="low_temp">Low: %d°%s</string>
     <string name="temp">%d°%s</string>
+    <string name="button_launch_website">View on weather.gov</string>
 </resources>

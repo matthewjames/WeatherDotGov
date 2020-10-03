@@ -12,11 +12,14 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View.*
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewGroupCompat
+import androidx.core.view.children
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.mikephil.charting.charts.LineChart
@@ -58,8 +61,8 @@ class SearchActivity : AppCompatActivity() {
     private val TAG = "SearchActivity"
     private val LOCATION_REQUEST_CODE = 1310
     private val AUTO_COMPLETE_REQUEST_CODE = 503
-    private var mLatitude: Double = 0.0
-    private var mLongitude: Double = 0.0
+    var mLatitude: Double = 0.0
+    var mLongitude: Double = 0.0
     private lateinit var hourlyForecastData: ForecastData
     private lateinit var viewModel: SearchActivityViewModel
     private lateinit var locationClient: FusedLocationProviderClient
@@ -134,7 +137,7 @@ class SearchActivity : AppCompatActivity() {
             // Populate 7 Day tab with data
             rvSevenDay.apply {
                 layoutManager = LinearLayoutManager(this.context)
-                adapter = SevenDayAdapter(it)
+                adapter = SevenDayAdapter(this.context, it, mLongitude, mLatitude)
             }
 
             viewPager.setCurrentItem(0, true)
@@ -359,6 +362,7 @@ class SearchActivity : AppCompatActivity() {
         chart.description.isEnabled = false
         chart.setTouchEnabled(false)
         chart.setViewPortOffsets(0f,100.0f,0f,100.0f)
+        chart.animateY(2000)
 
         chart.postInvalidate()
     }

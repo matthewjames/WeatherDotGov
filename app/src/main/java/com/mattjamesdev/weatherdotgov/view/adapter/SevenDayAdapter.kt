@@ -1,26 +1,45 @@
 package com.mattjamesdev.weatherdotgov.view.adapter
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.network.model.DayForecast
+import com.mattjamesdev.weatherdotgov.view.SearchActivity
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.item_sevenday.view.*
+import kotlinx.android.synthetic.main.item_sevenday_button.view.*
 
-class SevenDayAdapter(val forecastData: MutableList<DayForecast>): RecyclerView.Adapter<SevenDayViewHolder>(){
+class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayForecast>, val longitude: Double, val latitude: Double): RecyclerView.Adapter<SevenDayViewHolder>(){
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SevenDayViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_sevenday, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
         return SevenDayViewHolder(view)
     }
 
     override fun getItemCount(): Int {
-        return forecastData.size
+        return forecastData.size + 1
     }
 
     override fun onBindViewHolder(holder: SevenDayViewHolder, position: Int) {
-        return holder.bind(forecastData[position])
+        return if(position == forecastData.size) {
+            holder.itemView.button_launch_website.setOnClickListener {
+                val url = "https://forecast.weather.gov/MapClick.php?lat=$latitude&lon=$longitude"
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(url)
+                context.startActivity(intent)
+            }
+        } else {
+            holder.bind(forecastData[position])
+        }
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (position == forecastData.size) R.layout.item_sevenday_button else R.layout.item_sevenday
     }
 }
 
