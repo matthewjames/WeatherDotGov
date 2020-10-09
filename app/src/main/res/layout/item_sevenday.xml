@@ -2,75 +2,73 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="100dp"
-    android:padding="16dp"
-    >
+    android:layout_height="75dp"
+    android:paddingTop="0dp">
 
-    <RelativeLayout
-        android:id="@+id/rvDayContainer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:layout_margin="4dp"
-        android:padding="4dp">
-
-        <TextView
-            android:id="@+id/tvDay"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Day"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvShortForecast"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/tvDay"
-            android:text="Short Forecast" />
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/rvTempContainer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:layout_margin="4dp">
-
-        <TextView
-            android:id="@+id/tvHighTemp"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:text="High"
-            android:textAlignment="viewStart"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvLowTemp"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/tvHighTemp"
-            android:text="Low"
-            android:textAlignment="viewStart" />
-    </RelativeLayout>
-
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cvTodayIcon"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        app:cardCornerRadius="30dp"
-        android:layout_marginEnd="16dp"
-        android:layout_toStartOf="@id/rvTempContainer"
-        android:layout_centerVertical="true">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <ImageView
             android:id="@+id/ivForecastIcon"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:translationZ="0dp"
             app:srcCompat="@drawable/ic_image_black_24dp" />
-    </androidx.cardview.widget.CardView>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/gradient_background"
+            />
+    </FrameLayout>
+
+
+
+    <TextView
+        android:id="@+id/tvDay"
+        style="@style/primaryText"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:text="Day"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvShortForecast"
+        style="@style/primaryText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvDay"
+        android:layout_toStartOf="@id/tvHighTemp"
+        android:text="Short Forecast" />
+
+    <TextView
+        android:id="@+id/tvHighTemp"
+        style="@style/primaryText"
+        android:layout_marginEnd="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/tvLowTemp"
+        android:layout_alignParentBottom="true"
+        android:text="High"
+        android:textSize="24sp"
+        android:textAlignment="viewEnd"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvLowTemp"
+        style="@style/primaryText"
+        android:layout_marginStart="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:textSize="16sp"
+        android:text="Low"
+        android:textAlignment="viewEnd" />
 
 
 </RelativeLayout>

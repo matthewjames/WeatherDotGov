@@ -31,7 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tvTodayDateTime"
-            android:text="HighTemp"
+            android:text="@string/high_temp"
             android:textSize="16sp"/>
 
         <TextView
@@ -42,7 +42,7 @@
             android:layout_below="@id/tvTodayDateTime"
             android:layout_toEndOf="@id/tvTodayHigh"
             android:layout_alignBaseline="@id/tvTodayHigh"
-            android:text="LowTemp"
+            android:text="@string/low_temp"
             android:textSize="16sp"/>
 
         <TextView

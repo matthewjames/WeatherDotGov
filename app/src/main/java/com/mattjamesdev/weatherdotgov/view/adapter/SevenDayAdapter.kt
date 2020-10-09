@@ -3,22 +3,22 @@ package com.mattjamesdev.weatherdotgov.view.adapter
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.network.model.DayForecast
-import com.mattjamesdev.weatherdotgov.view.SearchActivity
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.item_sevenday.view.*
 import kotlinx.android.synthetic.main.item_sevenday_button.view.*
 
-class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayForecast>, val longitude: Double, val latitude: Double): RecyclerView.Adapter<SevenDayViewHolder>(){
+class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayForecast>, val longitude: Double, val latitude: Double, val width: Int): RecyclerView.Adapter<SevenDayViewHolder>(){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SevenDayViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
-        return SevenDayViewHolder(view)
+        return SevenDayViewHolder(view, width)
     }
 
     override fun getItemCount(): Int {
@@ -43,13 +43,13 @@ class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayFor
     }
 }
 
-class SevenDayViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
+class SevenDayViewHolder(itemView: View, val width: Int): RecyclerView.ViewHolder(itemView){
     fun bind(dayForecast: DayForecast){
         val day = dayForecast.high!!.name
         val shortForecast = dayForecast.high!!.shortForecast
         val highTemp = dayForecast.high!!.temperature
         val lowTemp = dayForecast.low!!.temperature
-        val iconPath = dayForecast.high!!.icon.replaceAfter("=", "large")
+        val iconUrl = dayForecast.high!!.icon.replaceAfter("=", "large")
         val tempUnit = dayForecast.tempUnit!!
 
         itemView.tvDay.text = day
@@ -57,6 +57,11 @@ class SevenDayViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         itemView.tvHighTemp.text = "$highTemp\u00B0$tempUnit"
         itemView.tvLowTemp.text = "$lowTemp\u00B0$tempUnit"
 
-        Picasso.get().load(iconPath).into(itemView.ivForecastIcon)
+        itemView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+
+        Picasso.get().load(iconUrl)
+            .resize(width, itemView.measuredHeight)
+            .centerCrop(Gravity.TOP)
+            .into(itemView.ivForecastIcon)
     }
 }

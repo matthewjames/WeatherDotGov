@@ -137,7 +137,7 @@ class SearchActivity : AppCompatActivity() {
             // Populate 7 Day tab with data
             rvSevenDay.apply {
                 layoutManager = LinearLayoutManager(this.context)
-                adapter = SevenDayAdapter(this.context, it, mLongitude, mLatitude)
+                adapter = SevenDayAdapter(this.context, it, mLongitude, mLatitude, rvSevenDay.width)
             }
 
             viewPager.setCurrentItem(0, true)
@@ -165,6 +165,7 @@ class SearchActivity : AppCompatActivity() {
         val pagerAdapter = PagerAdapter(this, tabLayout.tabCount)
         viewPager.adapter = pagerAdapter
         viewPager.offscreenPageLimit = pagerAdapter.numberOfTabs
+
 
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = tabTitles[position]
