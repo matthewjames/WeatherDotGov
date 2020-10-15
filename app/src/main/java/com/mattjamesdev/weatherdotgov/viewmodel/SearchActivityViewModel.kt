@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.mattjamesdev.weatherdotgov.network.model.*
+import com.mattjamesdev.weatherdotgov.model.*
 import com.mattjamesdev.weatherdotgov.repository.SearchActivityRepository
 import kotlinx.coroutines.*
 

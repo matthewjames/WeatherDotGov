@@ -3,20 +3,25 @@ package com.mattjamesdev.weatherdotgov.view.adapter
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.mattjamesdev.weatherdotgov.R
-import com.mattjamesdev.weatherdotgov.network.model.DayForecast
+import com.mattjamesdev.weatherdotgov.model.DayForecast
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.item_sevenday.view.*
 import kotlinx.android.synthetic.main.item_sevenday_button.view.*
 
 class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayForecast>, val longitude: Double, val latitude: Double, val width: Int): RecyclerView.Adapter<SevenDayViewHolder>(){
+    val TAG = "SevenDayAdapter"
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SevenDayViewHolder {
+        Log.d(TAG, "onCreateViewHolder() entered")
+
         val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
         return SevenDayViewHolder(view, width)
     }
@@ -26,6 +31,9 @@ class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayFor
     }
 
     override fun onBindViewHolder(holder: SevenDayViewHolder, position: Int) {
+        Log.d(TAG, "onBindViewHolder() entered")
+
+
         return if(position == forecastData.size) {
             holder.itemView.button_launch_website.setOnClickListener {
                 val url = "https://forecast.weather.gov/MapClick.php?lat=$latitude&lon=$longitude"
@@ -34,6 +42,16 @@ class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayFor
                 context.startActivity(intent)
             }
         } else {
+            val expanded = forecastData[position].isExpanded
+            holder.expandableLayout.visibility = if(expanded) View.VISIBLE else View.GONE
+
+            holder.itemView.rlDayForecast.setOnClickListener {
+                val dayForecast = forecastData[position]
+                dayForecast.isExpanded = !dayForecast.isExpanded
+                notifyItemChanged(position)
+            }
+
+            holder.itemView.flItemBackgroundImage.minimumWidth = width
             holder.bind(forecastData[position])
         }
     }
@@ -44,6 +62,8 @@ class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayFor
 }
 
 class SevenDayViewHolder(itemView: View, val width: Int): RecyclerView.ViewHolder(itemView){
+    val expandableLayout = itemView.rlExpandableLayout
+
     fun bind(dayForecast: DayForecast){
         val day = dayForecast.high!!.name
         val shortForecast = dayForecast.high!!.shortForecast
@@ -57,11 +77,12 @@ class SevenDayViewHolder(itemView: View, val width: Int): RecyclerView.ViewHolde
         itemView.tvHighTemp.text = "$highTemp\u00B0$tempUnit"
         itemView.tvLowTemp.text = "$lowTemp\u00B0$tempUnit"
 
+
         itemView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
 
+        Log.d("bind", "Width: $width")
         Picasso.get().load(iconUrl)
-            .resize(width, itemView.measuredHeight)
-            .centerCrop(Gravity.TOP)
+            .fit()
             .into(itemView.ivForecastIcon)
     }
 }

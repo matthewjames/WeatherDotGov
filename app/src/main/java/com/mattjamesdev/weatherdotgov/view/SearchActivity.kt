@@ -6,20 +6,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Typeface
-import android.location.Geocoder
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View.*
-import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewGroupCompat
-import androidx.core.view.children
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.mikephil.charting.charts.LineChart
@@ -40,9 +36,9 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.tabs.TabLayoutMediator
 import com.mattjamesdev.weatherdotgov.Keys
 import com.mattjamesdev.weatherdotgov.R
-import com.mattjamesdev.weatherdotgov.network.model.DayForecast
-import com.mattjamesdev.weatherdotgov.network.model.ForecastData
-import com.mattjamesdev.weatherdotgov.network.model.Period
+import com.mattjamesdev.weatherdotgov.model.DayForecast
+import com.mattjamesdev.weatherdotgov.model.ForecastData
+import com.mattjamesdev.weatherdotgov.model.Period
 import com.mattjamesdev.weatherdotgov.view.adapter.PagerAdapter
 import com.mattjamesdev.weatherdotgov.view.adapter.SevenDayAdapter
 import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
@@ -137,7 +133,7 @@ class SearchActivity : AppCompatActivity() {
             // Populate 7 Day tab with data
             rvSevenDay.apply {
                 layoutManager = LinearLayoutManager(this.context)
-                adapter = SevenDayAdapter(this.context, it, mLongitude, mLatitude, rvSevenDay.width)
+                adapter = SevenDayAdapter(this.context, it, mLongitude, mLatitude, width)
             }
 
             viewPager.setCurrentItem(0, true)

@@ -1,7 +1,7 @@
 package com.mattjamesdev.weatherdotgov.network
 
-import com.mattjamesdev.weatherdotgov.network.model.ForecastData
-import com.mattjamesdev.weatherdotgov.network.model.ForecastArea
+import com.mattjamesdev.weatherdotgov.model.ForecastData
+import com.mattjamesdev.weatherdotgov.model.ForecastArea
 import retrofit2.http.GET
 import retrofit2.http.Path
 

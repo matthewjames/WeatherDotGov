@@ -5,15 +5,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
 
 import com.mattjamesdev.weatherdotgov.R
-import com.mattjamesdev.weatherdotgov.network.model.DayForecast
-import com.mattjamesdev.weatherdotgov.view.adapter.SevenDayAdapter
-import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
 import kotlinx.android.synthetic.main.fragment_seven_day.*
 
 /**

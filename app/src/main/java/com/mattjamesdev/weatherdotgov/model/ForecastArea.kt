@@ -1,4 +1,4 @@
-package com.mattjamesdev.weatherdotgov.network.model
+package com.mattjamesdev.weatherdotgov.model
 
 data class ForecastArea(
     val properties: Properties

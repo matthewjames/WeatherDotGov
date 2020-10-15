@@ -1,4 +1,4 @@
-package com.mattjamesdev.weatherdotgov.network.model
+package com.mattjamesdev.weatherdotgov.model
 
 class ForecastData(
     val properties: PropertiesY
