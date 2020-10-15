@@ -223,6 +223,7 @@ class SearchActivity : AppCompatActivity() {
         tvTodayLow.text = getString(R.string.low_temp, todayForecast.low?.temperature, tempUnit)
         tvCurrentTemp.text = getString(R.string.temp, currentForecast.temperature, tempUnit)
         tvTodayShortForecast.text = currentForecast.shortForecast
+        tvTodayDetailedForecast.text = if(currentForecast.isDaytime) todayForecast.high?.detailedForecast else todayForecast.low?.detailedForecast
 
         Picasso.get().load(currentForecast.icon.replaceAfter("=", "large")).into(ivTodayIcon)
 
@@ -247,6 +248,7 @@ class SearchActivity : AppCompatActivity() {
         tvTomorrowHigh.text = getString(R.string.high_temp, tomorrowForecast.high?.temperature, tempUnit)
         tvTomorrowLow.text = getString(R.string.low_temp, tomorrowForecast.low?.temperature, tempUnit)
         tvTomorrowShortForecast.text = tomorrowForecast.high?.shortForecast
+        tvTomorrowDetailedForecast.text = tomorrowForecast.high?.detailedForecast
         Picasso.get().load(tomorrowForecast.high?.icon?.replaceAfter("=", "large")).into(ivTomorrowIcon)
 
         val periods = tomorrowForecast.hourly!!
