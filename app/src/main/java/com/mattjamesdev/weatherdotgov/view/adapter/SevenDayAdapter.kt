@@ -45,17 +45,16 @@ class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayFor
                 context.startActivity(intent)
             }
         } else {
-            val expanded = forecastData[position].isExpanded
-            holder.expandableLayout.visibility = if(expanded) View.VISIBLE else View.GONE
+            val dayForecast = forecastData[position]
+            val expanded = dayForecast.isExpanded
 
+            holder.bind(dayForecast)
+            holder.expandableLayout.visibility = if(expanded) View.VISIBLE else View.GONE
             holder.itemView.rlDayForecast.setOnClickListener {
-                val dayForecast = forecastData[position]
                 dayForecast.isExpanded = !dayForecast.isExpanded
                 notifyItemChanged(position)
             }
 
-
-            holder.bind(forecastData[position])
             val periods = if(position == 0) hourlyForecastData.properties.periods.subList(0, 24) else holder.periods
             val tempGraph = TemperatureGraph(this.context, periods, holder.chart)
             tempGraph.animateTime = 500

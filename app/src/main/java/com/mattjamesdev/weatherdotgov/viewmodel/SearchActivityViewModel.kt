@@ -88,11 +88,12 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                 if(dayForecast.date == hourlyPeriods[j].startTime.substring(0,10)){
                     dayHourlyPeriodList.add(hourlyPeriods[j])
                 } else {
-                    dayForecast.hourly = dayHourlyPeriodList
                     hourlyPeriods = hourlyPeriods.slice(j until hourlyPeriods.size) as MutableList<Period>
                     break
                 }
             }
+
+            dayForecast.hourly = dayHourlyPeriodList
 
             // initialize high and low
 
