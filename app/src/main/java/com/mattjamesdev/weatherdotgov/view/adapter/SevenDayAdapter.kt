@@ -12,18 +12,21 @@ import android.widget.RelativeLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.model.DayForecast
+import com.mattjamesdev.weatherdotgov.model.ForecastData
+import com.mattjamesdev.weatherdotgov.model.Period
+import com.mattjamesdev.weatherdotgov.utils.TemperatureGraph
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.item_sevenday.view.*
 import kotlinx.android.synthetic.main.item_sevenday_button.view.*
 
-class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayForecast>, val longitude: Double, val latitude: Double, val width: Int): RecyclerView.Adapter<SevenDayViewHolder>(){
+class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayForecast>,val hourlyForecastData: ForecastData, val longitude: Double, val latitude: Double): RecyclerView.Adapter<SevenDayViewHolder>(){
     val TAG = "SevenDayAdapter"
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SevenDayViewHolder {
         Log.d(TAG, "onCreateViewHolder() entered")
 
         val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
-        return SevenDayViewHolder(view, width)
+        return SevenDayViewHolder(view)
     }
 
     override fun getItemCount(): Int {
@@ -51,8 +54,14 @@ class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayFor
                 notifyItemChanged(position)
             }
 
-            holder.itemView.flItemBackgroundImage.minimumWidth = width
+
             holder.bind(forecastData[position])
+            val periods = if(position == 0) hourlyForecastData.properties.periods.subList(0, 24) else holder.periods
+            val tempGraph = TemperatureGraph(this.context, periods, holder.chart)
+            tempGraph.animateTime = 500
+            tempGraph.build()
+
+            holder.scrollView.scrollTo(0,0)
         }
     }
 
@@ -61,8 +70,11 @@ class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayFor
     }
 }
 
-class SevenDayViewHolder(itemView: View, val width: Int): RecyclerView.ViewHolder(itemView){
+class SevenDayViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
     val expandableLayout = itemView.rlExpandableLayout
+    val chart = itemView.dayHourlyChart
+    val scrollView = itemView.svDayChart
+    lateinit var periods: List<Period>
 
     fun bind(dayForecast: DayForecast){
         val day = dayForecast.high!!.name
@@ -71,16 +83,15 @@ class SevenDayViewHolder(itemView: View, val width: Int): RecyclerView.ViewHolde
         val lowTemp = dayForecast.low!!.temperature
         val iconUrl = dayForecast.high!!.icon.replaceAfter("=", "large")
         val tempUnit = dayForecast.tempUnit!!
+        periods = dayForecast.hourly!!
 
         itemView.tvDay.text = day
         itemView.tvShortForecast.text = shortForecast
         itemView.tvHighTemp.text = "$highTemp\u00B0$tempUnit"
         itemView.tvLowTemp.text = "$lowTemp\u00B0$tempUnit"
 
-
         itemView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
 
-        Log.d("bind", "Width: $width")
         Picasso.get().load(iconUrl)
             .fit()
             .into(itemView.ivForecastIcon)

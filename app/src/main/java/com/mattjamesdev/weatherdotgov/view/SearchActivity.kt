@@ -21,10 +21,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
-import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -39,6 +37,8 @@ import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.model.DayForecast
 import com.mattjamesdev.weatherdotgov.model.ForecastData
 import com.mattjamesdev.weatherdotgov.model.Period
+import com.mattjamesdev.weatherdotgov.utils.MyValueFormatter
+import com.mattjamesdev.weatherdotgov.utils.TemperatureGraph
 import com.mattjamesdev.weatherdotgov.view.adapter.PagerAdapter
 import com.mattjamesdev.weatherdotgov.view.adapter.SevenDayAdapter
 import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
@@ -47,7 +47,6 @@ import kotlinx.android.synthetic.main.activity_search.*
 import kotlinx.android.synthetic.main.fragment_seven_day.*
 import kotlinx.android.synthetic.main.fragment_today.*
 import kotlinx.android.synthetic.main.fragment_tomorrow.*
-import java.text.DecimalFormat
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -133,7 +132,7 @@ class SearchActivity : AppCompatActivity() {
             // Populate 7 Day tab with data
             rvSevenDay.apply {
                 layoutManager = LinearLayoutManager(this.context)
-                adapter = SevenDayAdapter(this.context, it, mLongitude, mLatitude, width)
+                adapter = SevenDayAdapter(this.context, it, hourlyForecastData, mLongitude, mLatitude)
             }
 
             viewPager.setCurrentItem(0, true)
@@ -230,15 +229,9 @@ class SearchActivity : AppCompatActivity() {
 //        Log.d(TAG, "hourlyForecastData: ${hourlyForecastData.properties.periods.subList(0, 24)}")
 
         val periods = hourlyForecastData.properties.periods.subList(0, 24)
-        val lineData = LineData(createLineChartDataSet(periods))
+        TemperatureGraph(this, periods, todayHourlyChart).build()
 
-        todayHourlyChart.data = lineData
-        todayHourlyChart.notifyDataSetChanged()
         svTodayChart.scrollTo(0,0)
-
-        val labels = createXAxisLabels(periods)
-
-        buildTemperatureChart(todayHourlyChart, labels)
 
         viewPager.adapter?.notifyDataSetChanged()
 
@@ -257,13 +250,9 @@ class SearchActivity : AppCompatActivity() {
         Picasso.get().load(tomorrowForecast.high?.icon?.replaceAfter("=", "large")).into(ivTomorrowIcon)
 
         val periods = tomorrowForecast.hourly!!
-        tomorrowHourlyChart.data = LineData(createLineChartDataSet(periods))
-        tomorrowHourlyChart.notifyDataSetChanged()
+        TemperatureGraph(this, periods, tomorrowHourlyChart).build()
+
         svTomorrowChart.scrollTo(0,0)
-
-        val labels = createXAxisLabels(periods)
-
-        buildTemperatureChart(tomorrowHourlyChart, labels)
 
         viewPager.adapter?.notifyDataSetChanged()
 
@@ -278,101 +267,6 @@ class SearchActivity : AppCompatActivity() {
         if (view != null) {
             val imm = this@SearchActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
-        }
-    }
-
-    private fun createXAxisLabels(periods: List<Period>) : List<String> {
-        val labels = mutableListOf<String>()
-        val fromFormat = DateTimeFormatter.ISO_OFFSET_DATE_TIME
-        val toFormat = DateTimeFormatter.ofPattern("h a")
-
-        for(i in periods.indices){
-            val label = LocalDateTime.parse(periods[i].startTime, fromFormat).format(toFormat)
-//            Log.d(TAG, "Label $label created from ${periods[i].startTime}")
-
-            labels.add(
-                if(i == 0 || i == (periods.size-1)){
-                ""
-                } else {
-                    label
-                }
-            )
-        }
-
-        return labels
-    }
-
-    private fun createLineChartDataSet(periods: List<Period>) : LineDataSet {
-        val entries = ArrayList<Entry>()
-
-        for(i in periods.indices){
-            // parse hourly forecast data into entries for data set
-            // entries parsed as (hour, temperature)
-
-            val temperature = periods[i].temperature.toFloat()
-            entries.add(Entry(i.toFloat(), temperature))
-        }
-
-        val lineDataSet = LineDataSet(entries, "Temperature")
-        lineDataSet.isHighlightEnabled = false
-        lineDataSet.setDrawFilled(true)
-        lineDataSet.fillDrawable = ContextCompat.getDrawable(this, R.drawable.gradient_temp_chart)
-
-        lineDataSet.setDrawValues(true)
-        lineDataSet.valueTextSize = 16f
-        lineDataSet.valueTextColor = ContextCompat.getColor(this, R.color.textChartDataPointLight)
-        lineDataSet.valueTypeface = Typeface.DEFAULT_BOLD
-
-        lineDataSet.setDrawCircles(true)
-        lineDataSet.setDrawCircleHole(false)
-        lineDataSet.setCircleColor(ContextCompat.getColor(this, R.color.transparent))
-        lineDataSet.circleRadius = 6f
-
-        lineDataSet.enableDashedLine(0f,1f,0f)
-        lineDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
-        lineDataSet.cubicIntensity = 0.2f
-
-        lineDataSet.valueFormatter = MyValueFormatter()
-
-        return lineDataSet
-    }
-
-    private fun buildTemperatureChart(chart: LineChart, labels: List<String>){
-        chart.axisRight.isEnabled = false
-
-        chart.axisLeft.isEnabled = false
-        chart.axisLeft.axisMinimum = chart.yMin - 10f
-
-        chart.xAxis.setDrawGridLines(false)
-        chart.xAxis.position = XAxis.XAxisPosition.BOTTOM
-        chart.xAxis.granularity = 1f
-        chart.xAxis.setLabelCount(labels.size, true)
-        chart.xAxis.textSize = 14f
-        chart.xAxis.textColor = ContextCompat.getColor(this, R.color.textChartXAxisDark)
-        chart.xAxis.typeface = Typeface.DEFAULT_BOLD
-        chart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
-        chart.xAxis.axisLineColor = ContextCompat.getColor(this, R.color.textInfoPanelLight)
-        chart.xAxis.yOffset = 10f
-
-        chart.setNoDataText("No temperature values!")
-        chart.legend.isEnabled = false
-        chart.description.isEnabled = false
-        chart.setTouchEnabled(false)
-        chart.setViewPortOffsets(0f,100.0f,0f,100.0f)
-        chart.animateY(2000)
-
-        chart.postInvalidate()
-    }
-}
-
-class MyValueFormatter : ValueFormatter() {
-    private val format = DecimalFormat("###°")
-
-    override fun getPointLabel(entry: Entry?): String {
-       return if(entry?.x == 0f || entry?.x == 23f){
-            ""
-        } else {
-            format.format(entry?.y)
         }
     }
 }
