@@ -9,4 +9,7 @@
     <string name="low_temp">Low: %d°%s</string>
     <string name="temp">%d°%s</string>
     <string name="button_launch_website">View on weather.gov</string>
+    <string name="alert">Alert</string>
+    <string name="placeholder50">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed id ipsum non enim egestas consectetur vitae vitae purus. In hac habitasse platea dictumst. Etiam fringilla dolor quis nulla pulvinar malesuada cursus non ipsum. Ut consequat purus vel est volutpat, in venenatis lacus mattis. Donec diam mi, vestibulum id ornare bibendum.</string>
+    <string name="placeholder10">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam vel.</string>
 </resources>

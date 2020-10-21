@@ -21,8 +21,13 @@ class TodayFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_today, container, false)
     }
 
-    override fun onStart() {
-
-        super.onStart()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        view.viewTreeObserver.addOnGlobalLayoutListener {
+            if (view.height > 0){
+                val params = llMain.layoutParams
+                params.height = view.height
+                llMain.layoutParams = params
+            }
+        }
     }
 }

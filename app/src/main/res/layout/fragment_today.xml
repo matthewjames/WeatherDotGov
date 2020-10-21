@@ -9,129 +9,233 @@
     android:visibility="invisible"
     tools:context=".view.TodayFragment">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:background="#44000000"
-        android:translationZ="5dp">
-
-        <TextView
-            android:id="@+id/tvTodayDateTime"
-            style="@style/primaryText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:text="DateTime"
-            android:textSize="16sp"/>
-
-        <TextView
-            android:id="@+id/tvTodayHigh"
-            style="@style/primaryText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tvTodayDateTime"
-            android:text="@string/high_temp"
-            android:textSize="16sp"/>
-
-        <TextView
-            android:id="@+id/tvTodayLow"
-            style="@style/primaryText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/tvTodayDateTime"
-            android:layout_toEndOf="@id/tvTodayHigh"
-            android:layout_alignBaseline="@id/tvTodayHigh"
-            android:text="@string/low_temp"
-            android:textSize="16sp"/>
-
-        <TextView
-            android:id="@+id/tvCurrentTemp"
-            style="@style/primaryText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/tvTodayHigh"
-            android:layout_marginTop="0dp"
-            android:text="Current"
-            android:gravity="center_vertical"
-            android:textSize="72sp"
-            android:textStyle="normal"/>
-
-        <TextView
-            android:id="@+id/tvTodayShortForecast"
-            style="@style/primaryText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@id/tvCurrentTemp"
-            android:layout_alignBottom="@id/tvCurrentTemp"
-            android:layout_alignParentEnd="true"
-            android:layout_toEndOf="@id/tvCurrentTemp"
-            android:gravity="center"
-            android:text="ShortForecast"
-            android:textAlignment="center"
-            android:textSize="24sp"/>
-
-        <TextView
-            android:id="@+id/tvTodayDetailedForecast"
-            style="@style/primaryText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/tvCurrentTemp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:text="DetailedForecast"
-            android:textSize="14sp"
-            />
-
-    </RelativeLayout>
-
-
-
-    <FrameLayout
-        android:id="@+id/flTomorrowBackgroundImage"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="100dp"
-        android:translationZ="0dp">
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/ivTodayIcon"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_image_black_24dp"
-            />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/gradient_background"/>
-    </FrameLayout>
-
-    <HorizontalScrollView
-        android:id="@+id/svTodayChart"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:translationZ="2dp">
+        android:fillViewport="true">
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <com.github.mikephil.charting.charts.LineChart
-                android:id="@+id/todayHourlyChart"
-                android:layout_width="1200dp"
-                android:layout_height="match_parent"
-                android:background="@color/transparent"/>
+            <RelativeLayout
+                android:id="@+id/llMain"
+                android:layout_width="match_parent"
+                android:layout_height="1000dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:translationZ="5dp">
+
+
+                    <RelativeLayout
+                        android:id="@+id/rlTodayForecastInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentEnd="true"
+                        android:background="#44000000">
+
+                        <TextView
+                            android:id="@+id/tvTodayDateTime"
+                            style="@style/primaryText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:text="DateTime"
+                            android:textSize="16sp"/>
+
+                        <TextView
+                            android:id="@+id/tvTodayHigh"
+                            style="@style/primaryText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/tvTodayDateTime"
+                            android:text="@string/high_temp"
+                            android:textSize="16sp"/>
+
+                        <TextView
+                            android:id="@+id/tvTodayLow"
+                            style="@style/primaryText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/tvTodayDateTime"
+                            android:layout_toEndOf="@id/tvTodayHigh"
+                            android:layout_alignBaseline="@id/tvTodayHigh"
+                            android:text="@string/low_temp"
+                            android:textSize="16sp"/>
+
+                        <TextView
+                            android:id="@+id/tvCurrentTemp"
+                            style="@style/primaryText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/tvTodayHigh"
+                            android:layout_marginTop="0dp"
+                            android:text="Current"
+                            android:gravity="center_vertical"
+                            android:textSize="72sp"
+                            android:textStyle="normal"/>
+
+                        <TextView
+                            android:id="@+id/tvTodayShortForecast"
+                            style="@style/primaryText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignTop="@id/tvCurrentTemp"
+                            android:layout_alignBottom="@id/tvCurrentTemp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_toEndOf="@id/tvCurrentTemp"
+                            android:gravity="center"
+                            android:text="ShortForecast"
+                            android:textAlignment="center"
+                            android:textSize="24sp"/>
+
+                        <TextView
+                            android:id="@+id/tvTodayDetailedForecast"
+                            style="@style/primaryText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/tvCurrentTemp"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentEnd="true"
+                            android:text="DetailedForecast"
+                            android:textSize="14sp"
+                            />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/rlTodayForecastInfo"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="@color/alertBackgroundDark"
+                        android:translationZ="5dp"
+                        android:visibility="visible">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/ivTodayAlertIcon"
+                            android:layout_margin="8dp"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:tint="@color/textInfoPanelLight"
+                            android:src="@drawable/ic_outline_error_outline_24"/>
+
+                        <TextView
+                            style="@style/primaryText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/alert"
+                            android:textSize="16sp"
+                            android:layout_toEndOf="@+id/ivTodayAlertIcon"
+                            android:layout_alignBaseline="@+id/ivTodayAlertIcon"
+                            android:layout_alignParentTop="true"
+                            android:layout_alignParentEnd="true"
+                            />
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+
+                <FrameLayout
+                    android:id="@+id/flTodayBackgroundImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="100dp"
+                    android:translationZ="0dp">
+
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/ivTodayIcon"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_image_black_24dp"
+                        />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/gradient_background"/>
+                </FrameLayout>
+
+                <HorizontalScrollView
+                    android:id="@+id/svTodayChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentBottom="true"
+                    android:translationZ="2dp">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent">
+
+                        <com.github.mikephil.charting.charts.LineChart
+                            android:id="@+id/todayHourlyChart"
+                            android:layout_width="1200dp"
+                            android:layout_height="match_parent"
+                            android:background="@color/transparent"/>
+                    </LinearLayout>
+
+                </HorizontalScrollView>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlSecondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/llAlertInfo"
+                    android:layout_margin="16dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/primaryText"
+                        android:layout_margin="0dp"
+                        android:gravity="center_vertical"
+                        android:background="@color/alertBackgroundDark"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:text="@string/placeholder10"/>
+
+                    <TextView
+                        android:layout_margin="0dp"
+                        style="@style/primaryText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/placeholder50"
+                        android:textSize="16sp"
+                        android:background="@color/alertBackgroundLight"/>
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
         </LinearLayout>
 
-    </HorizontalScrollView>
+
+    </androidx.core.widget.NestedScrollView>
+
+
 
 </RelativeLayout>
