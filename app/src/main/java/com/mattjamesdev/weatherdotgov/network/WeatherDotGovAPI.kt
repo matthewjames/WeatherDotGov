@@ -1,5 +1,6 @@
 package com.mattjamesdev.weatherdotgov.network
 
+import com.mattjamesdev.weatherdotgov.model.AlertData
 import com.mattjamesdev.weatherdotgov.model.ForecastData
 import com.mattjamesdev.weatherdotgov.model.ForecastArea
 import retrofit2.http.GET
@@ -16,4 +17,7 @@ interface WeatherDotGovAPI {
 
     @GET("gridpoints/{wfo}/{x},{y}/forecast")
     suspend fun get7DayForecastData(@Path("wfo") wfo: String, @Path("x") x: Int, @Path("y") y: Int) : ForecastData
+
+    @GET("alerts/active/zone/{zoneId}")
+    suspend fun getAlertData(@Path("zoneId") zoneId: String) : AlertData
 }

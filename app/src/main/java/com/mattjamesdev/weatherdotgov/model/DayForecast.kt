@@ -6,5 +6,6 @@ data class DayForecast(
     var high: Period? = null,
     var low: Period? = null,
     var tempUnit: String? = null,
-    var isExpanded: Boolean = false
+    var isExpanded: Boolean = false,
+    var hasAlert: Boolean = false
 )

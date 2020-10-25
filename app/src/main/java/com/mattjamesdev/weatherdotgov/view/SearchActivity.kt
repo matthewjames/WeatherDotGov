@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Typeface
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -18,11 +17,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -34,10 +28,10 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.tabs.TabLayoutMediator
 import com.mattjamesdev.weatherdotgov.Keys
 import com.mattjamesdev.weatherdotgov.R
+import com.mattjamesdev.weatherdotgov.model.AlertData
 import com.mattjamesdev.weatherdotgov.model.DayForecast
 import com.mattjamesdev.weatherdotgov.model.ForecastData
 import com.mattjamesdev.weatherdotgov.model.Period
-import com.mattjamesdev.weatherdotgov.utils.MyValueFormatter
 import com.mattjamesdev.weatherdotgov.utils.TemperatureGraph
 import com.mattjamesdev.weatherdotgov.view.adapter.PagerAdapter
 import com.mattjamesdev.weatherdotgov.view.adapter.SevenDayAdapter
@@ -50,7 +44,6 @@ import kotlinx.android.synthetic.main.fragment_tomorrow.*
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.ArrayList
 
 class SearchActivity : AppCompatActivity() {
     private val TAG = "SearchActivity"
@@ -128,12 +121,7 @@ class SearchActivity : AppCompatActivity() {
 
             updateTodayTab(it[0])
             updateTomorrowTab(it[1])
-
-            // Populate 7 Day tab with data
-            rvSevenDay.apply {
-                layoutManager = LinearLayoutManager(this.context)
-                adapter = SevenDayAdapter(this.context, it, hourlyForecastData, mLongitude, mLatitude)
-            }
+            updateSevenDayTab(it)
 
             viewPager.setCurrentItem(0, true)
         })
@@ -148,6 +136,12 @@ class SearchActivity : AppCompatActivity() {
 
         viewModel.cityState.observe(this, {
             etLocation.setText(it)
+        })
+
+        viewModel.hasAlert.observe( this, {
+            if(it){
+                showAlert()
+            }
         })
     }
 
@@ -261,7 +255,19 @@ class SearchActivity : AppCompatActivity() {
         rlTomorrowFragment.visibility = VISIBLE
     }
 
+    private fun updateSevenDayTab(dayForecastList: MutableList<DayForecast>){
+        // Populate 7 Day tab with data
+        rvSevenDay.apply {
+            layoutManager = LinearLayoutManager(this.context)
+            adapter = SevenDayAdapter(this.context, dayForecastList, hourlyForecastData, mLongitude, mLatitude)
+        }
+
+        rlSevenDayFragment.visibility = VISIBLE
+    }
+
     private fun search(latitude: Double, longitude: Double){
+        resetUI()
+
         viewModel.getForecastData(latitude, longitude)
 
         // dismiss keyboard
@@ -270,5 +276,26 @@ class SearchActivity : AppCompatActivity() {
             val imm = this@SearchActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
+    }
+
+    private fun resetUI(){
+        rlTodayFragment.visibility = INVISIBLE
+        rlTomorrowFragment.visibility = INVISIBLE
+        rlSevenDayFragment.visibility = INVISIBLE
+
+        // Reset alerts
+        rlAlert.visibility = GONE
+        llAlertInfo.visibility = GONE
+    }
+
+    private fun showAlert(){
+        val alertProperties = viewModel.alertData.features.get(0).alertProperties
+
+        tvAlertEvent.text = alertProperties.event
+        tvAlertHeadline.text = alertProperties.headline
+        tvAlertDescription.text = alertProperties.description
+
+        rlAlert.visibility = VISIBLE
+        llAlertInfo.visibility = VISIBLE
     }
 }

@@ -17,6 +17,8 @@ class SearchActivityRepository {
 
     suspend fun getSevenDayForecastData(wfo: String, x: Int, y: Int) = weatherDotGovService.get7DayForecastData(wfo, x, y)
 
+    suspend fun getAlertData(zoneId: String) = weatherDotGovService.getAlertData(zoneId)
+
     private fun getWeatherDotGovService() : Any {
         val client = OkHttpClient.Builder().cache(null).build()
 
