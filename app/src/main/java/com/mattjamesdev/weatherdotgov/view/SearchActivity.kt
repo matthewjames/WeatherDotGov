@@ -28,7 +28,6 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.tabs.TabLayoutMediator
 import com.mattjamesdev.weatherdotgov.Keys
 import com.mattjamesdev.weatherdotgov.R
-import com.mattjamesdev.weatherdotgov.model.AlertData
 import com.mattjamesdev.weatherdotgov.model.DayForecast
 import com.mattjamesdev.weatherdotgov.model.ForecastData
 import com.mattjamesdev.weatherdotgov.model.Period
@@ -72,7 +71,24 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun getLastLocation(){
-        locationClient.lastLocation.addOnSuccessListener {location: Location? ->
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TO DO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        locationClient.lastLocation.addOnSuccessListener { location: Location? ->
             if (location != null){
                 mLatitude = location.latitude
                 mLongitude = location.longitude
@@ -100,7 +116,7 @@ class SearchActivity : AppCompatActivity() {
                 getLastLocation()
             } else {
                 // Permission denied
-                Toast.makeText(this, "Current location cannot be determined: Permission Denied", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Current location cannot be determined: Location Permission Denied", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -284,18 +300,32 @@ class SearchActivity : AppCompatActivity() {
         rlSevenDayFragment.visibility = INVISIBLE
 
         // Reset alerts
-        rlAlert.visibility = GONE
-        llAlertInfo.visibility = GONE
+        llAlert.visibility = GONE
+        cvAlertInfo.visibility = GONE
     }
 
     private fun showAlert(){
         val alertProperties = viewModel.alertData.features.get(0).alertProperties
 
+        llAlert.setOnClickListener {
+            svTodayFragment.smoothScrollTo(0, cvAlertInfo.bottom)
+        }
         tvAlertEvent.text = alertProperties.event
         tvAlertHeadline.text = alertProperties.headline
+        cvAlertInfo.setOnClickListener {
+            val alertIsExpanded = tvAlertDescription.visibility == VISIBLE
+            val rotationDegree = if(alertIsExpanded) -90f else 90f
+
+            ivAlertArrow.animate().rotationBy(rotationDegree).setDuration(100).start()
+
+            tvAlertDescription.visibility = if(alertIsExpanded) GONE else VISIBLE
+            svTodayFragment.post {
+                svTodayFragment.smoothScrollTo(0, cvAlertInfo.bottom)
+            }
+        }
         tvAlertDescription.text = alertProperties.description
 
-        rlAlert.visibility = VISIBLE
-        llAlertInfo.visibility = VISIBLE
+        llAlert.visibility = VISIBLE
+        cvAlertInfo.visibility = VISIBLE
     }
 }
