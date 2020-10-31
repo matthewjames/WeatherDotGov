@@ -13,6 +13,8 @@ class SearchActivityRepository {
 
     suspend fun getForecastArea(latitude: Double, longitude: Double) = weatherDotGovService.getForecastArea(latitude, longitude)
 
+    suspend fun getGridpointData(wfo: String, x: Int, y: Int) = weatherDotGovService.getGridpointData(wfo, x, y)
+
     suspend fun getHourlyForecastData(wfo: String, x: Int, y: Int) = weatherDotGovService.getHourlyForecastData(wfo, x, y)
 
     suspend fun getSevenDayForecastData(wfo: String, x: Int, y: Int) = weatherDotGovService.get7DayForecastData(wfo, x, y)

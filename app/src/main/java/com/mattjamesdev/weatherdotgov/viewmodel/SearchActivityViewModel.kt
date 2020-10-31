@@ -13,6 +13,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     private val TAG = "SearchActivityVM"
     private val repository = SearchActivityRepository()
     val isLoading: MutableLiveData<Boolean> = MutableLiveData(false)
+    val gridpointData: MutableLiveData<GridpointData> = MutableLiveData()
     val dailyForecastData: MutableLiveData<MutableList<DayForecast>> = MutableLiveData()
     val hourlyForecastData: MutableLiveData<ForecastData> = MutableLiveData()
     val hasAlert: MutableLiveData<Boolean> = MutableLiveData(false)
@@ -35,14 +36,18 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
 
                 cityState.value = "${forecastArea.properties.relativeLocation.properties.city}, ${forecastArea.properties.relativeLocation.properties.state}"
 
+                Log.d(TAG, "Fetching gridpoint data...")
+                val currentGridpointData: Deferred<GridpointData> = GlobalScope.async (Dispatchers.IO){ repository.getGridpointData(wfo, x, y) }
+                Log.d(TAG, "Gridpoint data: ${currentGridpointData.await()}")
+
                 // Get hourly forecast
-                Log.d(TAG, "Fetching hourly forecast data")
+                Log.d(TAG, "Fetching hourly forecast data...")
                 val currentHourlyData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getHourlyForecastData(wfo, x, y) }
 //            Log.d(TAG, "hourlyForecastData: ${hourlyData.await()}")
                 hourlyForecastData.value = currentHourlyData.await()
 
                 // Get Seven Day forecast
-                Log.d(TAG, "Fetching seven day forecast data")
+                Log.d(TAG, "Fetching seven day forecast data...")
                 val currentSevenDayData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getSevenDayForecastData(wfo, x, y) }
 //            Log.d(TAG, "sevenDayForecastData: ${sevenDayData.await()}")
 

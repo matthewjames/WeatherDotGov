@@ -9,4 +9,5 @@
     <color name="textChartDataPointLight">#BBFFFFFF</color>
     <color name="alertBackgroundDark">#99FB8C00</color>
     <color name="alertBackgroundLight">#6AFB8C00</color>
+    <color name="cardBackgroundColor">#44000000</color>
 </resources>
