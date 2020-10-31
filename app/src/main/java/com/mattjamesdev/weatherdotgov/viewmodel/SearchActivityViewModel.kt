@@ -15,8 +15,10 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     val isLoading: MutableLiveData<Boolean> = MutableLiveData(false)
     val dailyForecastData: MutableLiveData<MutableList<DayForecast>> = MutableLiveData()
     val hourlyForecastData: MutableLiveData<ForecastData> = MutableLiveData()
+    val hasAlert: MutableLiveData<Boolean> = MutableLiveData(false)
     val errorMessage: MutableLiveData<String> = MutableLiveData()
     val cityState: MutableLiveData<String> = MutableLiveData()
+    lateinit var alertData: AlertData
 
     fun getForecastData(latitude: Double, longtitude: Double){
         GlobalScope.launch(Dispatchers.Main){
@@ -29,19 +31,29 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                 val wfo = forecastArea.properties.gridId
                 val x = forecastArea.properties.gridX
                 val y = forecastArea.properties.gridY
+                val zoneId = forecastArea.properties.forecastZone.substringAfter("https://api.weather.gov/zones/forecast/")
 
                 cityState.value = "${forecastArea.properties.relativeLocation.properties.city}, ${forecastArea.properties.relativeLocation.properties.state}"
 
+                // Get hourly forecast
                 Log.d(TAG, "Fetching hourly forecast data")
-                val hourlyData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getHourlyForecastData(wfo, x, y) }
+                val currentHourlyData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getHourlyForecastData(wfo, x, y) }
 //            Log.d(TAG, "hourlyForecastData: ${hourlyData.await()}")
-                hourlyForecastData.value = hourlyData.await()
+                hourlyForecastData.value = currentHourlyData.await()
 
+                // Get Seven Day forecast
                 Log.d(TAG, "Fetching seven day forecast data")
-                val sevenDayData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getSevenDayForecastData(wfo, x, y) }
+                val currentSevenDayData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getSevenDayForecastData(wfo, x, y) }
 //            Log.d(TAG, "sevenDayForecastData: ${sevenDayData.await()}")
 
-                dailyForecastData.value = combineLatestData(hourlyData.await(), sevenDayData.await())
+                // Get alert data
+                Log.d(TAG, "Fetching alert data")
+                val currentAlertData: Deferred<AlertData> = GlobalScope.async (Dispatchers.IO){ repository.getAlertData(zoneId) }
+                Log.d(TAG, "alertData: ${currentAlertData.await()}")
+                alertData = currentAlertData.await()
+                hasAlert.value = !alertData.features.isEmpty()
+
+                dailyForecastData.value = combineLatestData(currentHourlyData.await(), currentSevenDayData.await())
 //            Log.d(TAG, "dailyForecastData: $dailyForecastData")
             } catch (e: Exception) {
                 Log.d(TAG, "Exception thrown: $e")

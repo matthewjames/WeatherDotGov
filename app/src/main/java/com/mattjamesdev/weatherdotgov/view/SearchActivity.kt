@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Typeface
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -18,11 +17,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -37,7 +31,6 @@ import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.model.DayForecast
 import com.mattjamesdev.weatherdotgov.model.ForecastData
 import com.mattjamesdev.weatherdotgov.model.Period
-import com.mattjamesdev.weatherdotgov.utils.MyValueFormatter
 import com.mattjamesdev.weatherdotgov.utils.TemperatureGraph
 import com.mattjamesdev.weatherdotgov.view.adapter.PagerAdapter
 import com.mattjamesdev.weatherdotgov.view.adapter.SevenDayAdapter
@@ -50,7 +43,6 @@ import kotlinx.android.synthetic.main.fragment_tomorrow.*
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.ArrayList
 
 class SearchActivity : AppCompatActivity() {
     private val TAG = "SearchActivity"
@@ -79,7 +71,24 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun getLastLocation(){
-        locationClient.lastLocation.addOnSuccessListener {location: Location? ->
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TO DO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        locationClient.lastLocation.addOnSuccessListener { location: Location? ->
             if (location != null){
                 mLatitude = location.latitude
                 mLongitude = location.longitude
@@ -107,7 +116,7 @@ class SearchActivity : AppCompatActivity() {
                 getLastLocation()
             } else {
                 // Permission denied
-                Toast.makeText(this, "Current location cannot be determined: Permission Denied", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Current location cannot be determined: Location Permission Denied", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -128,12 +137,7 @@ class SearchActivity : AppCompatActivity() {
 
             updateTodayTab(it[0])
             updateTomorrowTab(it[1])
-
-            // Populate 7 Day tab with data
-            rvSevenDay.apply {
-                layoutManager = LinearLayoutManager(this.context)
-                adapter = SevenDayAdapter(this.context, it, hourlyForecastData, mLongitude, mLatitude)
-            }
+            updateSevenDayTab(it)
 
             viewPager.setCurrentItem(0, true)
         })
@@ -148,6 +152,12 @@ class SearchActivity : AppCompatActivity() {
 
         viewModel.cityState.observe(this, {
             etLocation.setText(it)
+        })
+
+        viewModel.hasAlert.observe( this, {
+            if(it){
+                showAlert()
+            }
         })
     }
 
@@ -261,7 +271,19 @@ class SearchActivity : AppCompatActivity() {
         rlTomorrowFragment.visibility = VISIBLE
     }
 
+    private fun updateSevenDayTab(dayForecastList: MutableList<DayForecast>){
+        // Populate 7 Day tab with data
+        rvSevenDay.apply {
+            layoutManager = LinearLayoutManager(this.context)
+            adapter = SevenDayAdapter(this.context, dayForecastList, hourlyForecastData, mLongitude, mLatitude)
+        }
+
+        rlSevenDayFragment.visibility = VISIBLE
+    }
+
     private fun search(latitude: Double, longitude: Double){
+        resetUI()
+
         viewModel.getForecastData(latitude, longitude)
 
         // dismiss keyboard
@@ -270,5 +292,40 @@ class SearchActivity : AppCompatActivity() {
             val imm = this@SearchActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
+    }
+
+    private fun resetUI(){
+        rlTodayFragment.visibility = INVISIBLE
+        rlTomorrowFragment.visibility = INVISIBLE
+        rlSevenDayFragment.visibility = INVISIBLE
+
+        // Reset alerts
+        llAlert.visibility = GONE
+        cvAlertInfo.visibility = GONE
+    }
+
+    private fun showAlert(){
+        val alertProperties = viewModel.alertData.features.get(0).alertProperties
+
+        llAlert.setOnClickListener {
+            svTodayFragment.smoothScrollTo(0, cvAlertInfo.bottom)
+        }
+        tvAlertEvent.text = alertProperties.event
+        tvAlertHeadline.text = alertProperties.headline
+        cvAlertInfo.setOnClickListener {
+            val alertIsExpanded = tvAlertDescription.visibility == VISIBLE
+            val rotationDegree = if(alertIsExpanded) -90f else 90f
+
+            ivAlertArrow.animate().rotationBy(rotationDegree).setDuration(100).start()
+
+            tvAlertDescription.visibility = if(alertIsExpanded) GONE else VISIBLE
+            svTodayFragment.post {
+                svTodayFragment.smoothScrollTo(0, cvAlertInfo.bottom)
+            }
+        }
+        tvAlertDescription.text = alertProperties.description
+
+        llAlert.visibility = VISIBLE
+        cvAlertInfo.visibility = VISIBLE
     }
 }
