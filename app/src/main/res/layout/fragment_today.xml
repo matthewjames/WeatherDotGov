@@ -226,6 +226,29 @@
                     android:background="@color/colorPrimary"
                     android:orientation="vertical">
 
+<!--                    Map view -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="300dp"
+                        android:layout_margin="16dp">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <fragment
+                                android:id="@+id/map_container"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_margin="16dp"
+                                android:layout_centerInParent="true"
+                                android:name="com.mattjamesdev.weatherdotgov.view.MapFragment"
+                                />
+
+                        </RelativeLayout>
+
+                    </androidx.cardview.widget.CardView>
+
                     <androidx.cardview.widget.CardView
                         android:id="@+id/cvAlertInfo"
                         android:layout_width="wrap_content"

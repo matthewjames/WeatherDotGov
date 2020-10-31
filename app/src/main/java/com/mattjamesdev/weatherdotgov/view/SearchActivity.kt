@@ -186,7 +186,7 @@ class SearchActivity : AppCompatActivity() {
             search(mLatitude, mLongitude)
         }
 
-        // keyboard button
+        // Keyboard search button
         etLocation.setOnEditorActionListener { v, actionId, event ->
             if(actionId == EditorInfo.IME_ACTION_SEARCH){
                 search(mLatitude, mLongitude)
