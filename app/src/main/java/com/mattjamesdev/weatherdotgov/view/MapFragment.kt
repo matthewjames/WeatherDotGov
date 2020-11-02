@@ -3,32 +3,58 @@ package com.mattjamesdev.weatherdotgov.view
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolygonOptions
 import com.mattjamesdev.weatherdotgov.R
+import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
 
 class MapFragment : Fragment() {
+    private val TAG = "MapFragment"
+    private lateinit var viewModel: SearchActivityViewModel
+    private var polygonPoints = listOf<LatLng>()
 
     private val callback = OnMapReadyCallback { googleMap ->
-        /**
-         * Manipulates the map once available.
-         * This callback is triggered when the map is ready to be used.
-         * This is where we can add markers or lines, add listeners or move the camera.
-         * In this case, we just add a marker near Sydney, Australia.
-         * If Google Play services is not installed on the device, the user will be prompted to
-         * install it inside the SupportMapFragment. This method will only be triggered once the
-         * user has installed Google Play services and returned to the app.
-         */
-        val sydney = LatLng(-34.0, 151.0)
-        googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        viewModel.gridpointData.observe(this,{
+            // Maps array of array of coordinates to List<LatLng>
+            polygonPoints = it.geometry.coordinates[0].mapIndexed{ index, list -> LatLng(list[1],list[0]) }
+            Log.d(TAG, "Polygon points: $polygonPoints")
+
+            val polygon1 = googleMap.addPolygon(
+                PolygonOptions()
+                    .addAll(polygonPoints)
+                    .strokeWidth(2f)
+                    .strokeColor(resources.getColor(R.color.polyExterior, context?.theme))
+                    .fillColor(resources.getColor(R.color.polyInterior, context?.theme))
+            )
+
+            val boundsBuilder = LatLngBounds.Builder()
+            for (point in polygonPoints){
+                boundsBuilder.include(point)
+            }
+            val bounds = boundsBuilder.build()
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(bounds.center, 12f))
+        })
+    }
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d(TAG, "onCreate() entered")
+
+        viewModel = ViewModelProvider(requireActivity()).get(SearchActivityViewModel::class.java)
+
+
+        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(

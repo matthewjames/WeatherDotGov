@@ -36,9 +36,11 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
 
                 cityState.value = "${forecastArea.properties.relativeLocation.properties.city}, ${forecastArea.properties.relativeLocation.properties.state}"
 
+                // Get gridpoint data
                 Log.d(TAG, "Fetching gridpoint data...")
                 val currentGridpointData: Deferred<GridpointData> = GlobalScope.async (Dispatchers.IO){ repository.getGridpointData(wfo, x, y) }
                 Log.d(TAG, "Gridpoint data: ${currentGridpointData.await()}")
+                gridpointData.value = currentGridpointData.await()
 
                 // Get hourly forecast
                 Log.d(TAG, "Fetching hourly forecast data...")

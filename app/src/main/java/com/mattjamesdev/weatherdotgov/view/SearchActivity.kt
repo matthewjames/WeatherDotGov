@@ -243,6 +243,7 @@ class SearchActivity : AppCompatActivity() {
         TemperatureGraph(this, periods, todayHourlyChart).build()
 
         svTodayChart.scrollTo(0,0)
+        svTodayFragment.scrollTo(0,0)
 
         viewPager.adapter?.notifyDataSetChanged()
 
