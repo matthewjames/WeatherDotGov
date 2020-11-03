@@ -24,7 +24,12 @@ data class Properties(
 
 data class RelativeLocation(
     val properties: PropertiesX,
+    val geometry: PointGeometry,
     val type: String
+)
+
+data class PointGeometry(
+    val coordinates: List<Double>
 )
 
 data class PropertiesX(

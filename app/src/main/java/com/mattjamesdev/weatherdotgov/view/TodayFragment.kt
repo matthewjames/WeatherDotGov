@@ -7,12 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.maps.model.LatLng
 
 import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
 import kotlinx.android.synthetic.main.fragment_today.*
-import kotlinx.android.synthetic.main.fragment_today.view.*
 
 
 class TodayFragment : Fragment() {
@@ -21,7 +19,6 @@ class TodayFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate() entered")
 
         viewModel = ViewModelProvider(requireActivity()).get(SearchActivityViewModel::class.java)
     }
@@ -35,6 +32,7 @@ class TodayFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        // Sets main linear layout to fill full screen
         view.viewTreeObserver.addOnGlobalLayoutListener {
             if (view.height > 0){
                 val params = llMain.layoutParams
@@ -42,5 +40,14 @@ class TodayFragment : Fragment() {
                 llMain.layoutParams = params
             }
         }
+
+        val supportMapFragment = childFragmentManager.findFragmentById(R.id.mapContainer) as MapFragment
+        val listener = object : MapFragment.OnTouchListener {
+            override fun onTouch() {
+                svTodayFragment.requestDisallowInterceptTouchEvent(true)
+            }
+        }
+
+        supportMapFragment.setListener(listener)
     }
 }
