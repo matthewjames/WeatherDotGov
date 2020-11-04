@@ -228,6 +228,7 @@
 <!--                    Map view -->
 
                         <RelativeLayout
+                            android:id="@+id/rlMap"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_margin="16dp"
@@ -274,6 +275,7 @@
                         android:layout_height="wrap_content"
                         android:elevation="0dp"
                         android:visibility="gone"
+                        android:layout_below="@+id/rlMap"
                         app:cardBackgroundColor="@color/colorPrimary">
 
                         <LinearLayout
