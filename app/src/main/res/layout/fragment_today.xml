@@ -246,25 +246,53 @@
                                 android:layout_alignParentTop="true"
                                 />
 
+                            <TextView
+                                style="@style/primaryText"
+                                android:id="@+id/tvMapInstructions"
+                                android:layout_margin="0dp"
+                                android:textSize="12sp"
+                                android:textStyle="normal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/map_instructions"
+                                android:layout_below="@+id/tvForecastArea"
+                                android:layout_centerHorizontal="true"
+                                tools:ignore="SmallSp" />
+
                             <androidx.fragment.app.FragmentContainerView
                                 android:id="@+id/mapContainer"
                                 android:layout_width="match_parent"
                                 android:layout_height="200dp"
+                                android:layout_marginTop="8dp"
+                                android:layout_marginBottom="16dp"
                                 android:layout_marginStart="16dp"
                                 android:layout_marginEnd="16dp"
                                 android:layout_centerHorizontal="true"
-                                android:layout_below="@id/tvForecastArea"
+                                android:layout_below="@id/tvMapInstructions"
                                 android:name="com.mattjamesdev.weatherdotgov.view.MapFragment"
                                 />
 
                             <TextView
                                 style="@style/primaryText"
-                                android:id="@+id/tvMapInstructions"
+                                android:id="@+id/tvPointForecastCityState"
+                                android:layout_margin="0dp"
+                                android:textSize="16sp"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/map_instructions"
-                                android:layout_below="@+id/mapContainer"
+                                android:layout_below="@id/mapContainer"
                                 android:layout_centerHorizontal="true"
+                                android:textAlignment="center"
+                                />
+
+                            <TextView
+                                style="@style/primaryText"
+                                android:id="@+id/tvPointForecastLatLong"
+                                android:textStyle="normal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@id/tvPointForecastCityState"
+                                android:layout_centerHorizontal="true"
+                                android:textAlignment="center"
                                 />
 
                         </RelativeLayout>

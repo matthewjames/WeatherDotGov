@@ -1,10 +1,10 @@
 package com.mattjamesdev.weatherdotgov.model
 
 data class ForecastArea(
-    val properties: Properties
+    val properties: ForecastAreaProperties
 )
 
-data class Properties(
+data class ForecastAreaProperties(
     val county: String,
     val cwa: String,
     val fireWeatherZone: String,
@@ -23,7 +23,7 @@ data class Properties(
 )
 
 data class RelativeLocation(
-    val properties: PropertiesX,
+    val properties: RelativeLocationProperties,
     val geometry: PointGeometry,
     val type: String
 )
@@ -32,7 +32,7 @@ data class PointGeometry(
     val coordinates: List<Double>
 )
 
-data class PropertiesX(
+data class RelativeLocationProperties(
     val city: String,
     val state: String
 )

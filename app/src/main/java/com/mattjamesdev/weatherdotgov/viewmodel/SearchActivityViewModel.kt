@@ -19,6 +19,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     val hasAlert: MutableLiveData<Boolean> = MutableLiveData(false)
     val errorMessage: MutableLiveData<String> = MutableLiveData()
     val cityState: MutableLiveData<String> = MutableLiveData()
+    val pointForecastLatLong: MutableLiveData<String> = MutableLiveData()
     lateinit var alertData: AlertData
 
     fun getForecastData(latitude: Double, longtitude: Double){
@@ -35,12 +36,13 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                 val zoneId = forecastArea.properties.forecastZone.substringAfter("https://api.weather.gov/zones/forecast/")
 
                 cityState.value = "${forecastArea.properties.relativeLocation.properties.city}, ${forecastArea.properties.relativeLocation.properties.state}"
+                pointForecastLatLong.value = "${forecastArea.properties.relativeLocation.geometry.coordinates[1]}°N ${forecastArea.properties.relativeLocation.geometry.coordinates[0]*-1}°W"
 
                 // Get gridpoint data
                 Log.d(TAG, "Fetching gridpoint data...")
-                val currentGridpointData: Deferred<GridpointData> = GlobalScope.async (Dispatchers.IO){ repository.getGridpointData(wfo, x, y) }
-                Log.d(TAG, "Gridpoint data: ${currentGridpointData.await()}")
-                gridpointData.value = currentGridpointData.await()
+                val currentGridpointData = GlobalScope.async (Dispatchers.IO){ repository.getGridpointData(wfo, x, y) }.await()
+                Log.d(TAG, "Gridpoint data: ${currentGridpointData}")
+                gridpointData.value = currentGridpointData
 
                 // Get hourly forecast
                 Log.d(TAG, "Fetching hourly forecast data...")
