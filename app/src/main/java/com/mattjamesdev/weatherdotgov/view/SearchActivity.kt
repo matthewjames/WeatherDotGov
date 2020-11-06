@@ -50,8 +50,6 @@ class SearchActivity : AppCompatActivity() {
     private val TAG = "SearchActivity"
     private val LOCATION_REQUEST_CODE = 1310
     private val AUTO_COMPLETE_REQUEST_CODE = 503
-    var mLatitude: Double = 0.0
-    var mLongitude: Double = 0.0
     private lateinit var viewModel: SearchActivityViewModel
     private lateinit var locationClient: FusedLocationProviderClient
     private lateinit var binding: ActivitySearchBinding
@@ -95,7 +93,7 @@ class SearchActivity : AppCompatActivity() {
                 viewModel.mLatitude = location.latitude
                 viewModel.mLongitude = location.longitude
 //                Log.d(TAG, "Location coordinates: $mLatitude, $mLongitude")
-                viewModel.getForecastData(mLatitude, mLongitude)
+                search()
             } else {
                 Log.d(TAG, "Location was null")
             }
@@ -168,13 +166,13 @@ class SearchActivity : AppCompatActivity() {
 
         // search bar button
         binding.ivSearch.setOnClickListener {
-            search(mLatitude, mLongitude)
+            search()
         }
 
         // Keyboard search button
         binding.etLocation.setOnEditorActionListener { v, actionId, event ->
             if(actionId == EditorInfo.IME_ACTION_SEARCH){
-                search(mLatitude, mLongitude)
+                search()
                 true
             } else {
                 false
@@ -197,18 +195,18 @@ class SearchActivity : AppCompatActivity() {
 
         if(requestCode == AUTO_COMPLETE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
             val place: Place = Autocomplete.getPlaceFromIntent(data!!)
-            mLatitude = place.latLng!!.latitude
-            mLongitude = place.latLng!!.longitude
+            viewModel.mLatitude = place.latLng!!.latitude
+            viewModel.mLongitude = place.latLng!!.longitude
 
-            search(mLatitude, mLongitude)
+            search()
         } else if (resultCode == AutocompleteActivity.RESULT_ERROR){
             val status: Status = Autocomplete.getStatusFromIntent(data!!)
             Toast.makeText(applicationContext, "Error: ${status.statusMessage}", Toast.LENGTH_LONG).show()
         }
     }
 
-    private fun search(latitude: Double, longitude: Double){
-        viewModel.getForecastData(latitude, longitude)
+    private fun search(){
+        viewModel.getForecastData()
 
         // dismiss keyboard
         val view = currentFocus

@@ -20,16 +20,15 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     val errorMessage: MutableLiveData<String> = MutableLiveData()
     val cityState: MutableLiveData<String> = MutableLiveData()
     val pointForecastLatLong: MutableLiveData<String> = MutableLiveData()
-//    lateinit var alertData: AlertData
     var mLatitude: Double = 0.0
     var mLongitude: Double = 0.0
 
-    fun getForecastData(latitude: Double, longtitude: Double){
+    fun getForecastData(){
         GlobalScope.launch(Dispatchers.Main){
             isLoading.value = true
 
             try {
-                val forecastArea: ForecastArea = withContext(Dispatchers.IO){ repository.getForecastArea(latitude, longtitude) }
+                val forecastArea: ForecastArea = withContext(Dispatchers.IO){ repository.getForecastArea(mLatitude, mLongitude) }
 //                Log.d(TAG, "Location data: $forecastArea")
 
                 val wfo = forecastArea.properties.gridId
