@@ -12,11 +12,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 
 import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.databinding.FragmentSevenDayBinding
-import com.mattjamesdev.weatherdotgov.databinding.FragmentTodayBinding
 import com.mattjamesdev.weatherdotgov.model.ForecastData
 import com.mattjamesdev.weatherdotgov.view.adapter.SevenDayAdapter
 import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
-import kotlinx.android.synthetic.main.fragment_seven_day.*
 
 /**
  * A simple [Fragment] subclass.
@@ -44,7 +42,7 @@ class SevenDayFragment : Fragment() {
             // Populate 7 Day tab with data
             binding.rvSevenDay.apply {
                 layoutManager = LinearLayoutManager(requireContext())
-                adapter = SevenDayAdapter(requireContext(), dayForecastList, hourlyForecastData, viewModel.mLongtitude, viewModel.mLatitude)
+                adapter = SevenDayAdapter(requireContext(), dayForecastList, hourlyForecastData, viewModel.mLongitude, viewModel.mLatitude)
             }
 
             binding.rlSevenDayFragment.visibility = View.VISIBLE

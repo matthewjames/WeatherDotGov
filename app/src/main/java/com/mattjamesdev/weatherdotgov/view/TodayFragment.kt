@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 
 import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.databinding.FragmentTodayBinding
+import com.mattjamesdev.weatherdotgov.model.AlertData
 import com.mattjamesdev.weatherdotgov.model.Period
 import com.mattjamesdev.weatherdotgov.utils.TemperatureGraph
 import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
@@ -73,6 +74,12 @@ class TodayFragment : Fragment() {
             binding.tvPointForecastLatLong.text = newLatLong
         })
 
+        viewModel.alertData.observe( viewLifecycleOwner, { newAlertData ->
+            if(!newAlertData.features.isEmpty()){
+                showAlert(newAlertData)
+            }
+        })
+
         return binding.root
     }
 
@@ -94,5 +101,30 @@ class TodayFragment : Fragment() {
         }
 
         supportMapFragment.setListener(listener)
+    }
+
+    private fun showAlert(alertData: AlertData){
+        val alertProperties = alertData.features.get(0).alertProperties
+
+        binding.llAlert.setOnClickListener {
+            svTodayFragment.smoothScrollTo(0, cvAlertInfo.bottom)
+        }
+        binding.tvAlertEvent.text = alertProperties.event
+        binding.tvAlertHeadline.text = alertProperties.headline
+        binding.cvAlertInfo.setOnClickListener {
+            val alertIsExpanded = binding.tvAlertDescription.visibility == View.VISIBLE
+            val rotationDegree = if(alertIsExpanded) -90f else 90f
+
+            binding.ivAlertArrow.animate().rotationBy(rotationDegree).setDuration(100).start()
+
+            binding.tvAlertDescription.visibility = if(alertIsExpanded) View.GONE else View.VISIBLE
+            binding.svTodayFragment.post {
+                binding.svTodayFragment.smoothScrollTo(0, binding.cvAlertInfo.bottom)
+            }
+        }
+        binding.tvAlertDescription.text = alertProperties.description
+
+        binding.llAlert.visibility = View.VISIBLE
+        binding.cvAlertInfo.visibility = View.VISIBLE
     }
 }

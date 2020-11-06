@@ -52,7 +52,6 @@ class SearchActivity : AppCompatActivity() {
     private val AUTO_COMPLETE_REQUEST_CODE = 503
     var mLatitude: Double = 0.0
     var mLongitude: Double = 0.0
-    private lateinit var hourlyForecastData: ForecastData
     private lateinit var viewModel: SearchActivityViewModel
     private lateinit var locationClient: FusedLocationProviderClient
     private lateinit var binding: ActivitySearchBinding
@@ -93,8 +92,8 @@ class SearchActivity : AppCompatActivity() {
         }
         locationClient.lastLocation.addOnSuccessListener { location: Location? ->
             if (location != null){
-                mLatitude = location.latitude
-                mLongitude = location.longitude
+                viewModel.mLatitude = location.latitude
+                viewModel.mLongitude = location.longitude
 //                Log.d(TAG, "Location coordinates: $mLatitude, $mLongitude")
                 viewModel.getForecastData(mLatitude, mLongitude)
             } else {
@@ -138,31 +137,12 @@ class SearchActivity : AppCompatActivity() {
             }
         })
 
-        viewModel.dailyForecastData.observe(this, {
-
-//            updateTodayTab(it[0])
-//            updateTomorrowTab(it[1])
-//            updateSevenDayTab(it)
-
-
-        })
-
-        viewModel.hourlyForecastData.observe(this, {
-            hourlyForecastData = it
-        })
-
         viewModel.errorMessage.observe(this, {
             Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
         })
 
         viewModel.cityState.observe(this, {
-            etLocation.setText(it)
-        })
-
-        viewModel.hasAlert.observe( this, {
-            if(it){
-                showAlert()
-            }
+            binding.etLocation.setText(it)
         })
     }
 
@@ -173,13 +153,13 @@ class SearchActivity : AppCompatActivity() {
             getString(R.string.tab_7_day)
         )
         val pagerAdapter = PagerAdapter(this, tabLayout.tabCount)
-        viewPager.adapter = pagerAdapter
-        viewPager.offscreenPageLimit = pagerAdapter.numberOfTabs
+        binding.viewPager.adapter = pagerAdapter
+        binding.viewPager.offscreenPageLimit = pagerAdapter.numberOfTabs
 
 
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = tabTitles[position]
-            viewPager.setCurrentItem(tab.position, true)
+            binding.viewPager.setCurrentItem(tab.position, true)
         }.attach()
     }
 
@@ -205,7 +185,7 @@ class SearchActivity : AppCompatActivity() {
 
         Places.initialize(applicationContext, Keys.placesKey())
 
-        etLocation.setOnClickListener {
+        binding.etLocation.setOnClickListener {
             val fieldList = arrayListOf(Place.Field.LAT_LNG)
             val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fieldList).build(this)
             startActivityForResult(intent, AUTO_COMPLETE_REQUEST_CODE)
@@ -225,66 +205,6 @@ class SearchActivity : AppCompatActivity() {
             val status: Status = Autocomplete.getStatusFromIntent(data!!)
             Toast.makeText(applicationContext, "Error: ${status.statusMessage}", Toast.LENGTH_LONG).show()
         }
-    }
-
-    private fun updateTodayTab(todayForecast: DayForecast){
-        val currentDateTime: String = DateTimeFormatter.ofPattern("MMMM d, h:mm a", Locale.getDefault())
-                                                        .format(LocalDateTime.now())
-        val currentForecast: Period = todayForecast.hourly?.get(0)!!
-        val tempUnit = todayForecast.tempUnit
-
-        tvTodayDateTime.text = currentDateTime
-        tvTodayHigh.text = getString(R.string.high_temp ,todayForecast.high?.temperature, tempUnit)
-        tvTodayLow.text = getString(R.string.low_temp, todayForecast.low?.temperature, tempUnit)
-        tvCurrentTemp.text = getString(R.string.temp, currentForecast.temperature, tempUnit)
-        tvTodayShortForecast.text = currentForecast.shortForecast
-        tvTodayDetailedForecast.text = if(currentForecast.isDaytime) todayForecast.high?.detailedForecast else todayForecast.low?.detailedForecast
-
-        Picasso.get().load(currentForecast.icon.replaceAfter("=", "large")).into(ivTodayIcon)
-
-//        Log.d(TAG, "hourlyForecastData: ${hourlyForecastData.properties.periods.subList(0, 24)}")
-
-        val periods = hourlyForecastData.properties.periods.subList(0, 24)
-        TemperatureGraph(this, periods, todayHourlyChart).build()
-
-        svTodayChart.scrollTo(0,0)
-        svTodayFragment.scrollTo(0,0)
-
-        viewPager.adapter?.notifyDataSetChanged()
-
-        rlTodayFragment.visibility = VISIBLE
-    }
-
-    private fun updateTomorrowTab(tomorrowForecast: DayForecast){
-        val tomorrowDate: String = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.getDefault())
-                                                    .format(LocalDate.now().plusDays(1))
-        val tempUnit = tomorrowForecast.tempUnit
-
-        tvTomorrowDate.text = tomorrowDate
-        tvTomorrowHigh.text = getString(R.string.high_temp, tomorrowForecast.high?.temperature, tempUnit)
-        tvTomorrowLow.text = getString(R.string.low_temp, tomorrowForecast.low?.temperature, tempUnit)
-        tvTomorrowShortForecast.text = tomorrowForecast.high?.shortForecast
-        tvTomorrowDetailedForecast.text = tomorrowForecast.high?.detailedForecast
-        Picasso.get().load(tomorrowForecast.high?.icon?.replaceAfter("=", "large")).into(ivTomorrowIcon)
-
-        val periods = tomorrowForecast.hourly!!
-        TemperatureGraph(this, periods, tomorrowHourlyChart).build()
-
-        svTomorrowChart.scrollTo(0,0)
-
-        viewPager.adapter?.notifyDataSetChanged()
-
-        rlTomorrowFragment.visibility = VISIBLE
-    }
-
-    private fun updateSevenDayTab(dayForecastList: MutableList<DayForecast>){
-        // Populate 7 Day tab with data
-        rvSevenDay.apply {
-            layoutManager = LinearLayoutManager(this.context)
-            adapter = SevenDayAdapter(this.context, dayForecastList, hourlyForecastData, mLongitude, mLatitude)
-        }
-
-        rlSevenDayFragment.visibility = VISIBLE
     }
 
     private fun search(latitude: Double, longitude: Double){
@@ -310,28 +230,5 @@ class SearchActivity : AppCompatActivity() {
         cvAlertInfo.visibility = GONE
     }
 
-    private fun showAlert(){
-        val alertProperties = viewModel.alertData.features.get(0).alertProperties
 
-        llAlert.setOnClickListener {
-            svTodayFragment.smoothScrollTo(0, cvAlertInfo.bottom)
-        }
-        tvAlertEvent.text = alertProperties.event
-        tvAlertHeadline.text = alertProperties.headline
-        cvAlertInfo.setOnClickListener {
-            val alertIsExpanded = tvAlertDescription.visibility == VISIBLE
-            val rotationDegree = if(alertIsExpanded) -90f else 90f
-
-            ivAlertArrow.animate().rotationBy(rotationDegree).setDuration(100).start()
-
-            tvAlertDescription.visibility = if(alertIsExpanded) GONE else VISIBLE
-            svTodayFragment.post {
-                svTodayFragment.smoothScrollTo(0, cvAlertInfo.bottom)
-            }
-        }
-        tvAlertDescription.text = alertProperties.description
-
-        llAlert.visibility = VISIBLE
-        cvAlertInfo.visibility = VISIBLE
-    }
 }

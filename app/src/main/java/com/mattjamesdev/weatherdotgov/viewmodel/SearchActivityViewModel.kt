@@ -16,13 +16,13 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     val gridpointData: MutableLiveData<GridpointData> = MutableLiveData()
     val dailyForecastData: MutableLiveData<MutableList<DayForecast>> = MutableLiveData()
     val hourlyForecastData: MutableLiveData<ForecastData> = MutableLiveData()
-    val hasAlert: MutableLiveData<Boolean> = MutableLiveData(false)
+    val alertData: MutableLiveData<AlertData> = MutableLiveData()
     val errorMessage: MutableLiveData<String> = MutableLiveData()
     val cityState: MutableLiveData<String> = MutableLiveData()
     val pointForecastLatLong: MutableLiveData<String> = MutableLiveData()
-    lateinit var alertData: AlertData
+//    lateinit var alertData: AlertData
     var mLatitude: Double = 0.0
-    var mLongtitude: Double = 0.0
+    var mLongitude: Double = 0.0
 
     fun getForecastData(latitude: Double, longtitude: Double){
         GlobalScope.launch(Dispatchers.Main){
@@ -39,8 +39,8 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
 
                 cityState.value = "${forecastArea.properties.relativeLocation.properties.city}, ${forecastArea.properties.relativeLocation.properties.state}"
                 mLatitude = forecastArea.properties.relativeLocation.geometry.coordinates[1]
-                mLongtitude = forecastArea.properties.relativeLocation.geometry.coordinates[0]
-                pointForecastLatLong.value = "${mLatitude}°N ${mLongtitude*-1}°W"
+                mLongitude = forecastArea.properties.relativeLocation.geometry.coordinates[0]
+                pointForecastLatLong.value = "${mLatitude}°N ${mLongitude*-1}°W"
 
                 // Get gridpoint data
                 Log.d(TAG, "Fetching gridpoint data...")
@@ -63,8 +63,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                 Log.d(TAG, "Fetching alert data")
                 val currentAlertData: Deferred<AlertData> = GlobalScope.async (Dispatchers.IO){ repository.getAlertData(zoneId) }
                 Log.d(TAG, "alertData: ${currentAlertData.await()}")
-                alertData = currentAlertData.await()
-                hasAlert.value = !alertData.features.isEmpty()
+                alertData.value = currentAlertData.await()
 
                 dailyForecastData.value = combineLatestData(currentHourlyData.await(), currentSevenDayData.await())
 //            Log.d(TAG, "dailyForecastData: $dailyForecastData")
