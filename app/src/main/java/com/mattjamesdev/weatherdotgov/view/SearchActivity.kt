@@ -137,12 +137,12 @@ class SearchActivity : AppCompatActivity() {
             }
         })
 
-        viewModel.errorMessage.observe(this, {
-            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+        viewModel.errorMessage.observe(this, {errorMessage ->
+            Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
         })
 
-        viewModel.cityState.observe(this, {
-            binding.etLocation.setText(it)
+        viewModel.cityState.observe(this, { cityState ->
+            binding.etLocation.setText(cityState)
         })
     }
 
@@ -164,15 +164,15 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun initSearchBar(){
-        etLocation.focusable = NOT_FOCUSABLE
+        binding.etLocation.focusable = NOT_FOCUSABLE
 
         // search bar button
-        ivSearch.setOnClickListener {
+        binding.ivSearch.setOnClickListener {
             search(mLatitude, mLongitude)
         }
 
         // Keyboard search button
-        etLocation.setOnEditorActionListener { v, actionId, event ->
+        binding.etLocation.setOnEditorActionListener { v, actionId, event ->
             if(actionId == EditorInfo.IME_ACTION_SEARCH){
                 search(mLatitude, mLongitude)
                 true
@@ -208,8 +208,6 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun search(latitude: Double, longitude: Double){
-        resetUI()
-
         viewModel.getForecastData(latitude, longitude)
 
         // dismiss keyboard
@@ -219,16 +217,4 @@ class SearchActivity : AppCompatActivity() {
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
-
-    private fun resetUI(){
-        rlTodayFragment.visibility = INVISIBLE
-        rlTomorrowFragment.visibility = INVISIBLE
-        rlSevenDayFragment.visibility = INVISIBLE
-
-        // Reset alerts
-        llAlert.visibility = GONE
-        cvAlertInfo.visibility = GONE
-    }
-
-
 }

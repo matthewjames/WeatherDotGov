@@ -34,6 +34,12 @@ class SevenDayFragment : Fragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_seven_day, container, false)
         viewModel = ViewModelProvider(requireActivity()).get(SearchActivityViewModel::class.java)
 
+        viewModel.isLoading.observe(viewLifecycleOwner, { isLoading ->
+            if(isLoading){
+                binding.rlSevenDayFragment.visibility = View.INVISIBLE
+            }
+        })
+
         viewModel.hourlyForecastData.observe(viewLifecycleOwner, { newHourlyForecastData ->
             hourlyForecastData = newHourlyForecastData
         })

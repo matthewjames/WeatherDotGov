@@ -36,6 +36,14 @@ class TodayFragment : Fragment() {
 
         viewModel = ViewModelProvider(requireActivity()).get(SearchActivityViewModel::class.java)
 
+        viewModel.isLoading.observe(viewLifecycleOwner, { isLoading ->
+            if(isLoading){
+                binding.rlTodayFragment.visibility = View.INVISIBLE
+                binding.llAlert.visibility = View.GONE
+                binding.cvAlertInfo.visibility = View.GONE
+            }
+        })
+
         viewModel.dailyForecastData.observe(viewLifecycleOwner,{ dayForecastList ->
             // Updates TodayFragment UI with new data
 
@@ -58,7 +66,7 @@ class TodayFragment : Fragment() {
             binding.svTodayChart.scrollTo(0,0)
             binding.svTodayFragment.scrollTo(0,0)
 
-            rlTodayFragment.visibility = View.VISIBLE
+            binding.rlTodayFragment.visibility = View.VISIBLE
         })
 
         viewModel.hourlyForecastData.observe(viewLifecycleOwner,{ hourlyForecastData ->

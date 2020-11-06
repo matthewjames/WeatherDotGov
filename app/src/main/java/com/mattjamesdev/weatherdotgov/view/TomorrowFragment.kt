@@ -36,6 +36,12 @@ class TomorrowFragment : Fragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_tomorrow, container, false)
         viewModel = ViewModelProvider(requireActivity()).get(SearchActivityViewModel::class.java)
 
+        viewModel.isLoading.observe(viewLifecycleOwner, { isLoading ->
+            if(isLoading){
+                binding.rlTomorrowFragment.visibility = View.INVISIBLE
+            }
+        })
+
         viewModel.dailyForecastData.observe(viewLifecycleOwner,{ dayForecastList ->
             val tomorrowForecast = dayForecastList[1]
             val tempUnit = tomorrowForecast.tempUnit
@@ -51,9 +57,9 @@ class TomorrowFragment : Fragment() {
             val periods = tomorrowForecast.hourly!!
             TemperatureGraph(requireContext(), periods, tomorrowHourlyChart).build()
 
-            svTomorrowChart.scrollTo(0,0)
+            binding.svTomorrowChart.scrollTo(0,0)
 
-            rlTomorrowFragment.visibility = View.VISIBLE
+            binding.rlTomorrowFragment.visibility = View.VISIBLE
         })
 
         return binding.root
