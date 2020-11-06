@@ -1,112 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/rlTomorrowFragment"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:visibility="invisible"
-    tools:context=".view.TomorrowFragment">
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel" />
+    </data>
 
     <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/cardBackgroundColor"
-        android:translationZ="5dp"
-        android:layout_margin="16dp">
-
-        <TextView
-            android:id="@+id/tvTomorrowDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="DateTime"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:textSize="16sp"
-            style="@style/primaryText"/>
-
-        <TextView
-            android:id="@+id/tvTomorrowHigh"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="HighTemp"
-            android:layout_below="@+id/tvTomorrowDate"
-            android:textSize="16sp"
-            style="@style/primaryText"/>
-
-        <TextView
-            android:id="@+id/tvTomorrowLow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="LowTemp"
-            android:layout_toEndOf="@id/tvTomorrowHigh"
-            android:layout_below="@id/tvTomorrowDate"
-            android:layout_alignBaseline="@id/tvTomorrowHigh"
-            style="@style/primaryText"
-            android:textSize="16sp"/>
-
-        <TextView
-            android:id="@+id/tvTomorrowShortForecast"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tvTomorrowHigh"
-            android:text="ShortForecast"
-            style="@style/primaryText"
-            android:textAlignment="viewStart"
-            android:textSize="24sp"/>
-
-        <TextView
-            android:id="@+id/tvTomorrowDetailedForecast"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tvTomorrowShortForecast"
-            android:text="DetailedForecast"
-            style="@style/primaryText"
-            android:textAlignment="viewStart"
-            android:textSize="14sp"/>
-
-    </RelativeLayout>
-
-    <FrameLayout
-        android:id="@+id/flTomorrowBackgroundImage"
+        android:id="@+id/rlTomorrowFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="100dp"
-        android:translationZ="0dp">
+        android:visibility="invisible"
+        tools:context=".view.TomorrowFragment">
 
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/ivTomorrowIcon"
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/cardBackgroundColor"
+            android:translationZ="5dp"
+            android:layout_margin="16dp">
+
+            <TextView
+                android:id="@+id/tvTomorrowDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DateTime"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true"
+                android:textSize="16sp"
+                style="@style/primaryText"/>
+
+            <TextView
+                android:id="@+id/tvTomorrowHigh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="HighTemp"
+                android:layout_below="@+id/tvTomorrowDate"
+                android:textSize="16sp"
+                style="@style/primaryText"/>
+
+            <TextView
+                android:id="@+id/tvTomorrowLow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LowTemp"
+                android:layout_toEndOf="@id/tvTomorrowHigh"
+                android:layout_below="@id/tvTomorrowDate"
+                android:layout_alignBaseline="@id/tvTomorrowHigh"
+                style="@style/primaryText"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/tvTomorrowShortForecast"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tvTomorrowHigh"
+                android:text="ShortForecast"
+                style="@style/primaryText"
+                android:textAlignment="viewStart"
+                android:textSize="24sp"/>
+
+            <TextView
+                android:id="@+id/tvTomorrowDetailedForecast"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tvTomorrowShortForecast"
+                android:text="DetailedForecast"
+                style="@style/primaryText"
+                android:textAlignment="viewStart"
+                android:textSize="14sp"/>
+
+        </RelativeLayout>
+
+        <FrameLayout
+            android:id="@+id/flTomorrowBackgroundImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_image_black_24dp"/>
+            android:layout_marginBottom="100dp"
+            android:translationZ="0dp">
 
-        <View
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/ivTomorrowIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_image_black_24dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/gradient_background"/>
+
+        </FrameLayout>
+
+        <HorizontalScrollView
+            android:id="@+id/svTomorrowChart"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/gradient_background"/>
+            android:layout_height="250dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true"
+            >
 
-    </FrameLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
 
-    <HorizontalScrollView
-        android:id="@+id/svTomorrowChart"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true"
-        >
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/tomorrowHourlyChart"
+                    android:layout_width="1200dp"
+                    android:layout_height="match_parent"/>
+            </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent">
+        </HorizontalScrollView>
 
-            <com.github.mikephil.charting.charts.LineChart
-                android:id="@+id/tomorrowHourlyChart"
-                android:layout_width="1200dp"
-                android:layout_height="match_parent"/>
-        </LinearLayout>
+    </RelativeLayout>
+</layout>
 
-    </HorizontalScrollView>
-
-</RelativeLayout>

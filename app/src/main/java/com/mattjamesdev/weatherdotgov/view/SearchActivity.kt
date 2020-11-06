@@ -133,6 +133,7 @@ class SearchActivity : AppCompatActivity() {
                 progressBar.visibility = VISIBLE
             } else {
                 binding.viewPager.adapter?.notifyDataSetChanged()
+                binding.viewPager.setCurrentItem(0, true)
                 progressBar.visibility = GONE
             }
         })
@@ -140,10 +141,10 @@ class SearchActivity : AppCompatActivity() {
         viewModel.dailyForecastData.observe(this, {
 
 //            updateTodayTab(it[0])
-            updateTomorrowTab(it[1])
+//            updateTomorrowTab(it[1])
             updateSevenDayTab(it)
 
-            viewPager.setCurrentItem(0, true)
+
         })
 
         viewModel.hourlyForecastData.observe(this, {
