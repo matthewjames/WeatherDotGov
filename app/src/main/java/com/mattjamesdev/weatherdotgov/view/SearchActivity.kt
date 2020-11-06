@@ -15,6 +15,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.common.api.Status
@@ -28,6 +29,7 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.tabs.TabLayoutMediator
 import com.mattjamesdev.weatherdotgov.Keys
 import com.mattjamesdev.weatherdotgov.R
+import com.mattjamesdev.weatherdotgov.databinding.ActivitySearchBinding
 import com.mattjamesdev.weatherdotgov.model.DayForecast
 import com.mattjamesdev.weatherdotgov.model.ForecastData
 import com.mattjamesdev.weatherdotgov.model.Period
@@ -53,10 +55,11 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var hourlyForecastData: ForecastData
     private lateinit var viewModel: SearchActivityViewModel
     private lateinit var locationClient: FusedLocationProviderClient
+    private lateinit var binding: ActivitySearchBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_search)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_search)
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
@@ -129,13 +132,14 @@ class SearchActivity : AppCompatActivity() {
             if(it){
                 progressBar.visibility = VISIBLE
             } else {
+                binding.viewPager.adapter?.notifyDataSetChanged()
                 progressBar.visibility = GONE
             }
         })
 
         viewModel.dailyForecastData.observe(this, {
 
-            updateTodayTab(it[0])
+//            updateTodayTab(it[0])
             updateTomorrowTab(it[1])
             updateSevenDayTab(it)
 
