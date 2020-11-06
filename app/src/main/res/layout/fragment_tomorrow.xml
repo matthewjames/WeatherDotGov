@@ -3,12 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
-        <variable
-            name="viewModel"
-            type="com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel" />
-    </data>
-
     <RelativeLayout
         android:id="@+id/rlTomorrowFragment"
         android:layout_width="match_parent"

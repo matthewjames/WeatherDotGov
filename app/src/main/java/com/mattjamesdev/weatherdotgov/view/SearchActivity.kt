@@ -142,7 +142,7 @@ class SearchActivity : AppCompatActivity() {
 
 //            updateTodayTab(it[0])
 //            updateTomorrowTab(it[1])
-            updateSevenDayTab(it)
+//            updateSevenDayTab(it)
 
 
         })

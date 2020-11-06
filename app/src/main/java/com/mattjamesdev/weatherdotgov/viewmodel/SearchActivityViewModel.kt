@@ -21,6 +21,8 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     val cityState: MutableLiveData<String> = MutableLiveData()
     val pointForecastLatLong: MutableLiveData<String> = MutableLiveData()
     lateinit var alertData: AlertData
+    var mLatitude: Double = 0.0
+    var mLongtitude: Double = 0.0
 
     fun getForecastData(latitude: Double, longtitude: Double){
         GlobalScope.launch(Dispatchers.Main){
@@ -36,7 +38,9 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                 val zoneId = forecastArea.properties.forecastZone.substringAfter("https://api.weather.gov/zones/forecast/")
 
                 cityState.value = "${forecastArea.properties.relativeLocation.properties.city}, ${forecastArea.properties.relativeLocation.properties.state}"
-                pointForecastLatLong.value = "${forecastArea.properties.relativeLocation.geometry.coordinates[1]}°N ${forecastArea.properties.relativeLocation.geometry.coordinates[0]*-1}°W"
+                mLatitude = forecastArea.properties.relativeLocation.geometry.coordinates[1]
+                mLongtitude = forecastArea.properties.relativeLocation.geometry.coordinates[0]
+                pointForecastLatLong.value = "${mLatitude}°N ${mLongtitude*-1}°W"
 
                 // Get gridpoint data
                 Log.d(TAG, "Fetching gridpoint data...")
