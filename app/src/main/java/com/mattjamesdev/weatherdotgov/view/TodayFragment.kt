@@ -95,9 +95,9 @@ class TodayFragment : Fragment() {
         // Sets main linear layout to fill full screen
         view.viewTreeObserver.addOnGlobalLayoutListener {
             if (view.height > 0){
-                val params = llMain.layoutParams
+                val params = binding.llMain.layoutParams
                 params.height = view.height
-                llMain.layoutParams = params
+                binding.llMain.layoutParams = params
             }
         }
 

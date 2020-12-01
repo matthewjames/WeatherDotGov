@@ -70,33 +70,30 @@ class SearchActivity : AppCompatActivity() {
         initTabLayout()
     }
 
-    private fun getLastLocation(){
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TO DO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }
-        locationClient.lastLocation.addOnSuccessListener { location: Location? ->
-            if (location != null){
-                viewModel.mLatitude = location.latitude
-                viewModel.mLongitude = location.longitude
-//                Log.d(TAG, "Location coordinates: $mLatitude, $mLongitude")
-                search()
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if(requestCode == LOCATION_REQUEST_CODE){
+            if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                // Permission granted
+                getLastLocation()
             } else {
-                Log.d(TAG, "Location was null")
+                // Permission denied
+                Toast.makeText(this, "Current location cannot be determined: Location Permission Denied", Toast.LENGTH_LONG).show()
             }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if(requestCode == AUTO_COMPLETE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
+            val place: Place = Autocomplete.getPlaceFromIntent(data!!)
+            viewModel.mLatitude = place.latLng!!.latitude
+            viewModel.mLongitude = place.latLng!!.longitude
+
+            search()
+        } else if (resultCode == AutocompleteActivity.RESULT_ERROR){
+            val status: Status = Autocomplete.getStatusFromIntent(data!!)
+            Toast.makeText(applicationContext, "Error: ${status.statusMessage}", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -109,14 +106,25 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if(requestCode == LOCATION_REQUEST_CODE){
-            if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                // Permission granted
-                getLastLocation()
+    private fun getLastLocation(){
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestLocationPermission()
+        }
+        locationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            if (location != null){
+                viewModel.mLatitude = location.latitude
+                viewModel.mLongitude = location.longitude
+//                Log.d(TAG, "Location coordinates: $mLatitude, $mLongitude")
+                search()
             } else {
-                // Permission denied
-                Toast.makeText(this, "Current location cannot be determined: Location Permission Denied", Toast.LENGTH_LONG).show()
+                Log.d(TAG, "Location was null")
             }
         }
     }
@@ -190,23 +198,9 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if(requestCode == AUTO_COMPLETE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
-            val place: Place = Autocomplete.getPlaceFromIntent(data!!)
-            viewModel.mLatitude = place.latLng!!.latitude
-            viewModel.mLongitude = place.latLng!!.longitude
-
-            search()
-        } else if (resultCode == AutocompleteActivity.RESULT_ERROR){
-            val status: Status = Autocomplete.getStatusFromIntent(data!!)
-            Toast.makeText(applicationContext, "Error: ${status.statusMessage}", Toast.LENGTH_LONG).show()
-        }
-    }
-
     private fun search(){
         viewModel.getForecastData()
+        Log.d(TAG, "getForecastData() time elapsed: ${viewModel.timeElapsed} ms")
 
         // dismiss keyboard
         val view = currentFocus

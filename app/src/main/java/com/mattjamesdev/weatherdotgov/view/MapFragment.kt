@@ -52,7 +52,7 @@ class MapFragment : Fragment(), GoogleMap.OnMapClickListener {
             }
             val bounds = boundsBuilder.build()
 
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(bounds.center, 12f))
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(bounds.center, 11f))
         })
 
         googleMap.setOnMapClickListener(this)
@@ -86,7 +86,11 @@ class MapFragment : Fragment(), GoogleMap.OnMapClickListener {
     }
 
     override fun onMapClick(point: LatLng?) {
-        point?.let { viewModel.getForecastData() }
+        point?.let {
+            viewModel.mLatitude = it.latitude
+            viewModel.mLongitude = it.longitude
+            viewModel.getForecastData()
+        }
     }
 
 

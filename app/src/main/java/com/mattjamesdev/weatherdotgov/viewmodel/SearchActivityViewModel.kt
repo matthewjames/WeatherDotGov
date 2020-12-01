@@ -4,10 +4,15 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.mattjamesdev.weatherdotgov.model.*
 import com.mattjamesdev.weatherdotgov.repository.SearchActivityRepository
 import kotlinx.coroutines.*
+import retrofit2.Response
+import java.lang.Exception
+import kotlin.properties.Delegates
+import kotlin.system.measureTimeMillis
 
 class SearchActivityViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "SearchActivityVM"
@@ -22,59 +27,162 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     val pointForecastLatLong: MutableLiveData<String> = MutableLiveData()
     var mLatitude: Double = 0.0
     var mLongitude: Double = 0.0
+    val timeElapsed = measureTimeMillis { getForecastData() }
+    private lateinit var wfo: String
+    private var x by Delegates.notNull<Int>()
+    private var y by Delegates.notNull<Int>()
+    private lateinit var zoneId: String
 
     fun getForecastData(){
-        GlobalScope.launch(Dispatchers.Main){
-            isLoading.value = true
+        lateinit var forecastArea: Response<ForecastArea>
+        lateinit var forecastAreaProperties: ForecastAreaProperties
+        lateinit var currentGridpointData: GridpointData
+        lateinit var currentHourlyData: ForecastData
+        lateinit var currentSevenDayData: ForecastData
+        lateinit var currentAlertData: AlertData
 
-            try {
-                val forecastArea: ForecastArea = withContext(Dispatchers.IO){ repository.getForecastArea(mLatitude, mLongitude) }
-//                Log.d(TAG, "Location data: $forecastArea")
+        isLoading.value = true
 
-                val wfo = forecastArea.properties.gridId
-                val x = forecastArea.properties.gridX
-                val y = forecastArea.properties.gridY
-                val zoneId = forecastArea.properties.forecastZone.substringAfter("https://api.weather.gov/zones/forecast/")
+        var testString = "This is a test string"
 
-                cityState.value = "${forecastArea.properties.relativeLocation.properties.city}, ${forecastArea.properties.relativeLocation.properties.state}"
-                mLatitude = forecastArea.properties.relativeLocation.geometry.coordinates[1]
-                mLongitude = forecastArea.properties.relativeLocation.geometry.coordinates[0]
-                pointForecastLatLong.value = "${mLatitude}°N ${mLongitude*-1}°W"
+        try {
+            viewModelScope.launch(Dispatchers.IO){
+                runBlocking {
+                    forecastArea = repository.getForecastArea(mLatitude, mLongitude)
+                    Log.d(TAG, "ForecastArea data fetch successful: ${forecastArea.isSuccessful}")
+                }
 
-                // Get gridpoint data
-                Log.d(TAG, "Fetching gridpoint data...")
-                val currentGridpointData = GlobalScope.async (Dispatchers.IO){ repository.getGridpointData(wfo, x, y) }.await()
-                Log.d(TAG, "Gridpoint data: ${currentGridpointData}")
-                gridpointData.value = currentGridpointData
+                if(forecastArea.isSuccessful) {
+                    forecastAreaProperties = forecastArea.body()!!.properties
 
-                // Get hourly forecast
-                Log.d(TAG, "Fetching hourly forecast data...")
-                val currentHourlyData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getHourlyForecastData(wfo, x, y) }
-//            Log.d(TAG, "hourlyForecastData: ${hourlyData.await()}")
-                hourlyForecastData.value = currentHourlyData.await()
+                    wfo = forecastAreaProperties.gridId
+                    x = forecastAreaProperties.gridX
+                    y = forecastAreaProperties.gridY
+                    zoneId =
+                        forecastAreaProperties.forecastZone.substringAfter("https://api.weather.gov/zones/forecast/")
+                    mLatitude = forecastAreaProperties.relativeLocation.geometry.coordinates[1]
+                    mLongitude = forecastAreaProperties.relativeLocation.geometry.coordinates[0]
 
-                // Get Seven Day forecast
-                Log.d(TAG, "Fetching seven day forecast data...")
-                val currentSevenDayData: Deferred<ForecastData> = GlobalScope.async(Dispatchers.IO){ repository.getSevenDayForecastData(wfo, x, y) }
-//            Log.d(TAG, "sevenDayForecastData: ${sevenDayData.await()}")
+                    currentGridpointData = async {
+                        Log.d(TAG, "Fetching gridpoint data...")
+                        repository.getGridpointData(wfo, x, y)
+                    }.await()
 
-                // Get alert data
-                Log.d(TAG, "Fetching alert data")
-                val currentAlertData: Deferred<AlertData> = GlobalScope.async (Dispatchers.IO){ repository.getAlertData(zoneId) }
-                Log.d(TAG, "alertData: ${currentAlertData.await()}")
-                alertData.value = currentAlertData.await()
+                    currentHourlyData = async {
+                        Log.d(TAG, "Fetching hourly forecast data...")
+                        repository.getHourlyForecastData(wfo, x, y)
+                    }.await()
 
-                dailyForecastData.value = combineLatestData(currentHourlyData.await(), currentSevenDayData.await())
-//            Log.d(TAG, "dailyForecastData: $dailyForecastData")
-            } catch (e: Exception) {
-                Log.d(TAG, "Exception thrown: $e")
-                FirebaseCrashlytics.getInstance().log("$TAG: Exception thrown: $e")
-                FirebaseCrashlytics.getInstance().sendUnsentReports()
-                errorMessage.value = "Error loading forecast data. Try again."
+                    currentSevenDayData = async {
+                        Log.d(TAG, "Fetching seven day forecast data...")
+                        repository.getSevenDayForecastData(wfo, x, y)
+                    }.await()
+
+                    currentAlertData = async {
+                        Log.d(TAG, "Fetching alert data")
+                        repository.getAlertData(zoneId)
+                    }.await()
+
+                    launch(Dispatchers.Main) {
+                        cityState.value =
+                            "${forecastAreaProperties.relativeLocation.properties.city}, ${forecastAreaProperties.relativeLocation.properties.state}"
+                        pointForecastLatLong.value = "${mLatitude}°N ${mLongitude * -1}°W"
+                        gridpointData.value = currentGridpointData
+                        hourlyForecastData.value = currentHourlyData
+                        alertData.value = currentAlertData
+                        dailyForecastData.value = withContext(Dispatchers.Default){ combineLatestData(currentHourlyData, currentSevenDayData) }
+                        isLoading.value = false
+                    }
+                }
             }
-
+        } catch (e: Exception) {
+            Log.d(TAG, "Exception thrown: $e")
+            FirebaseCrashlytics.getInstance().log("$TAG: Exception thrown: $e")
+            FirebaseCrashlytics.getInstance().sendUnsentReports()
             isLoading.value = false
+            errorMessage.value = "Error loading forecast data. Try again."
         }
+
+
+
+
+
+//        viewModelScope.launch(Dispatchers.Main){
+//
+//            try {
+//                val forecastArea: ForecastArea = withContext(Dispatchers.IO) {
+//                    repository.getForecastArea(mLatitude, mLongitude)
+//                }
+//                Log.d(TAG, "Location data: $forecastArea")
+//
+//                wfo = forecastArea.properties.gridId
+//                x = forecastArea.properties.gridX
+//                y = forecastArea.properties.gridY
+//                zoneId =
+//                    forecastArea.properties.forecastZone.substringAfter("https://api.weather.gov/zones/forecast/")
+//
+//                cityState.value =
+//                    "${forecastArea.properties.relativeLocation.properties.city}, ${forecastArea.properties.relativeLocation.properties.state}"
+//                mLatitude = forecastArea.properties.relativeLocation.geometry.coordinates[1]
+//                mLongitude = forecastArea.properties.relativeLocation.geometry.coordinates[0]
+//                pointForecastLatLong.value = "${mLatitude}°N ${mLongitude * -1}°W"
+//            } catch (e: Exception) {
+//                Log.d(TAG, "Exception thrown while fetching forecast area data: $e")
+//                FirebaseCrashlytics.getInstance().log("$TAG: Exception thrown while fetching forecast area data: $e")
+//                FirebaseCrashlytics.getInstance().sendUnsentReports()
+//                errorMessage.value = "Error loading forecast data. Try again."
+//            }
+//
+//            // Get gridpoint data
+//            try {
+//                val currentGridpointData = viewModelScope.async (Dispatchers.IO){
+//                    Log.d(TAG, "Fetching gridpoint data...")
+//                    repository.getGridpointData(wfo, x, y)
+//                }.await()
+////                Log.d(TAG, "Gridpoint data: ${currentGridpointData}")
+//                gridpointData.value = currentGridpointData
+//            } catch (e: Exception) {
+//                Log.d(TAG, "Exception thrown while fetching gridpoint data: $e")
+//                FirebaseCrashlytics.getInstance().log("$TAG: Exception thrown while fetching gridpoint data: $e")
+//                FirebaseCrashlytics.getInstance().sendUnsentReports()
+//                errorMessage.value = "Error loading forecast data. Try again."
+//            }
+//
+//            try {
+//                // Get hourly forecast
+//                val currentHourlyData: Deferred<ForecastData> = viewModelScope.async(Dispatchers.IO){
+//                    Log.d(TAG, "Fetching hourly forecast data...")
+//                    repository.getHourlyForecastData(wfo, x, y)
+//                }
+////            Log.d(TAG, "hourlyForecastData: ${hourlyData.await()}")
+//                hourlyForecastData.value = currentHourlyData.await()
+//
+//                // Get Seven Day forecast
+//                val currentSevenDayData: Deferred<ForecastData> = viewModelScope.async(Dispatchers.IO){
+//                    Log.d(TAG, "Fetching seven day forecast data...")
+//                    repository.getSevenDayForecastData(wfo, x, y)
+//                }
+////            Log.d(TAG, "sevenDayForecastData: ${sevenDayData.await()}")
+//
+//                // Get alert data
+//
+//                val currentAlertData: Deferred<AlertData> = viewModelScope.async (Dispatchers.IO){
+//                    Log.d(TAG, "Fetching alert data")
+//                    repository.getAlertData(zoneId)
+//                }
+////                Log.d(TAG, "alertData: ${currentAlertData.await()}")
+//                alertData.value = currentAlertData.await()
+//
+//                dailyForecastData.value = withContext(Dispatchers.Default) { combineLatestData(currentHourlyData.await(), currentSevenDayData.await()) }
+////            Log.d(TAG, "dailyForecastData: $dailyForecastData")
+//            } catch (e: Exception) {
+//                Log.d(TAG, "Exception thrown: $e")
+//                FirebaseCrashlytics.getInstance().log("$TAG: Exception thrown: $e")
+//                FirebaseCrashlytics.getInstance().sendUnsentReports()
+//                errorMessage.value = "Error loading forecast data. Try again."
+//            }
+//
+//        }
     }
 
     // parses the hourly and seven day forecast data into MutableList<DayForecast>
