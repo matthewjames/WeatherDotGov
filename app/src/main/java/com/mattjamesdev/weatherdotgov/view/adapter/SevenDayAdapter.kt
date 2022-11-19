@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.RelativeLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.mattjamesdev.weatherdotgov.R
+import com.mattjamesdev.weatherdotgov.databinding.ItemSevendayBinding
 import com.mattjamesdev.weatherdotgov.model.DayForecast
 import com.mattjamesdev.weatherdotgov.model.ForecastData
 import com.mattjamesdev.weatherdotgov.model.Period
@@ -19,14 +20,21 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.item_sevenday.view.*
 import kotlinx.android.synthetic.main.item_sevenday_button.view.*
 
-class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayForecast>,val hourlyForecastData: ForecastData, val longitude: Double, val latitude: Double): RecyclerView.Adapter<SevenDayViewHolder>(){
+class SevenDayAdapter(
+    val context: Context,
+    val forecastData: MutableList<DayForecast>,
+    val hourlyForecastData: ForecastData,
+    val longitude: Double,
+    val latitude: Double
+    ): RecyclerView.Adapter<SevenDayViewHolder>(){
     val TAG = "SevenDayAdapter"
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SevenDayViewHolder {
         Log.d(TAG, "onCreateViewHolder() entered")
 
+        val binding = ItemSevendayBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
-        return SevenDayViewHolder(view)
+        return SevenDayViewHolder(view, binding)
     }
 
     override fun getItemCount(): Int {
@@ -35,7 +43,6 @@ class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayFor
 
     override fun onBindViewHolder(holder: SevenDayViewHolder, position: Int) {
         Log.d(TAG, "onBindViewHolder() entered")
-
 
         return if(position == forecastData.size) {
             holder.itemView.button_launch_website.setOnClickListener {
@@ -69,7 +76,7 @@ class SevenDayAdapter(val context: Context, val forecastData: MutableList<DayFor
     }
 }
 
-class SevenDayViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
+class SevenDayViewHolder(itemView: View, val binding: ItemSevendayBinding): RecyclerView.ViewHolder(itemView){
     val expandableLayout = itemView.rlExpandableLayout
     val chart = itemView.dayHourlyChart
     val scrollView = itemView.svDayChart
@@ -84,7 +91,7 @@ class SevenDayViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         val tempUnit = dayForecast.tempUnit!!
         periods = dayForecast.hourly!!
 
-        itemView.tvDay.text = day
+        binding.tvDay.text = day
         itemView.tvShortForecast.text = shortForecast
         itemView.tvHighTemp.text = "$highTemp\u00B0$tempUnit"
         itemView.tvLowTemp.text = "$lowTemp\u00B0$tempUnit"

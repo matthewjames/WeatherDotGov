@@ -29,11 +29,12 @@ class MapFragment : Fragment(), GoogleMap.OnMapClickListener {
     private lateinit var mListener: OnTouchListener
 
     private val callback = OnMapReadyCallback { googleMap ->
-        viewModel.gridpointData.observe(viewLifecycleOwner, { gridpointData ->
+        viewModel.gridpointData.observe(this) {
             googleMap.clear()
 
             // Maps array of array of coordinates to List<LatLng>
-            val polygonPoints = gridpointData.geometry.coordinates[0].mapIndexed{ index, list -> LatLng(list[1],list[0]) }
+            val polygonPoints =
+                it.geometry.coordinates[0].mapIndexed { index, list -> LatLng(list[1], list[0]) }
             Log.d(TAG, "Polygon points: $polygonPoints")
 
             // Draw polygon from coordinates list
@@ -47,13 +48,13 @@ class MapFragment : Fragment(), GoogleMap.OnMapClickListener {
 
             // Use coordinates list to build a boundary for the map to locate and focus on
             val boundsBuilder = LatLngBounds.Builder()
-            for (point in polygonPoints){
+            for (point in polygonPoints) {
                 boundsBuilder.include(point)
             }
             val bounds = boundsBuilder.build()
 
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(bounds.center, 12f))
-        })
+        }
 
         googleMap.setOnMapClickListener(this)
     }
@@ -85,8 +86,8 @@ class MapFragment : Fragment(), GoogleMap.OnMapClickListener {
         mapFragment?.getMapAsync(callback)
     }
 
-    override fun onMapClick(point: LatLng?) {
-        point?.let { viewModel.getForecastData() }
+    override fun onMapClick(p0: LatLng) {
+        viewModel.getForecastData(p0.latitude, p0.longitude)
     }
 
 
