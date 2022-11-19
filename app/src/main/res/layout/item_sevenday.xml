@@ -1,120 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/relativeLayout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/colorPrimary"
-    android:paddingTop="0dp">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <FrameLayout
-        android:id="@+id/flItemBackgroundImage"
+    <data>
+        <variable
+            name="dayForecast"
+            type="com.mattjamesdev.weatherdotgov.model.DayForecast" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/relativeLayout"
         android:layout_width="match_parent"
-        android:layout_height="75dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:paddingTop="0dp">
 
-        <ImageView
-            android:id="@+id/ivForecastIcon"
+        <FrameLayout
+            android:id="@+id/flItemBackgroundImage"
             android:layout_width="match_parent"
             android:layout_height="75dp"
-            android:adjustViewBounds="true"
-            android:translationZ="0dp"
-            app:srcCompat="@drawable/ic_image_black_24dp" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <View
+            <ImageView
+                android:id="@+id/ivForecastIcon"
+                android:layout_width="match_parent"
+                android:layout_height="75dp"
+                android:adjustViewBounds="true"
+                android:translationZ="0dp"
+                app:srcCompat="@drawable/ic_image_black_24dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="75dp"
+                android:background="@drawable/gradient_background" />
+        </FrameLayout>
+
+        <RelativeLayout
+            android:id="@+id/rlDayForecast"
             android:layout_width="match_parent"
             android:layout_height="75dp"
-            android:background="@drawable/gradient_background" />
-    </FrameLayout>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-    <RelativeLayout
-        android:id="@+id/rlDayForecast"
-        android:layout_width="match_parent"
-        android:layout_height="75dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/tvDay"
-            style="@style/primaryText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:text="Day"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvShortForecast"
-            style="@style/primaryText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/tvDay"
-            android:layout_toStartOf="@id/tvHighTemp"
-            android:text="Short Forecast" />
-
-        <TextView
-            android:id="@+id/tvHighTemp"
-            style="@style/primaryText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginEnd="4dp"
-            android:layout_toStartOf="@id/tvLowTemp"
-            android:text="High"
-            android:textAlignment="viewEnd"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvLowTemp"
-            style="@style/primaryText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginStart="4dp"
-            android:text="Low"
-            android:textAlignment="viewEnd"
-            android:textSize="16sp" />
-    </RelativeLayout>
-
-
-    <RelativeLayout
-        android:id="@+id/rlExpandableLayout"
-        android:layout_width="match_parent"
-        android:layout_height="125dp"
-
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rlDayForecast">
-
-        <HorizontalScrollView
-            android:id="@+id/svDayChart"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:translationZ="2dp">
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/tvDay"
+                style="@style/primaryText"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:text="@{dayForecast.high.name}"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
-                <com.github.mikephil.charting.charts.LineChart
-                    android:id="@+id/dayHourlyChart"
-                    android:layout_width="1200dp"
-                    android:layout_height="match_parent"
-                    android:background="@color/transparent"/>
-            </LinearLayout>
+            <TextView
+                android:id="@+id/tvShortForecast"
+                style="@style/primaryText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tvDay"
+                android:layout_toStartOf="@id/tvHighTemp"
+                android:text="Short Forecast" />
 
-        </HorizontalScrollView>
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/tvHighTemp"
+                style="@style/primaryText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginEnd="4dp"
+                android:layout_toStartOf="@id/tvLowTemp"
+                android:text="High"
+                android:textAlignment="viewEnd"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvLowTemp"
+                style="@style/primaryText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="4dp"
+                android:text="Low"
+                android:textAlignment="viewEnd"
+                android:textSize="16sp" />
+        </RelativeLayout>
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <RelativeLayout
+            android:id="@+id/rlExpandableLayout"
+            android:layout_width="match_parent"
+            android:layout_height="125dp"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rlDayForecast">
+
+            <HorizontalScrollView
+                android:id="@+id/svDayChart"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:translationZ="2dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent">
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/dayHourlyChart"
+                        android:layout_width="1200dp"
+                        android:layout_height="match_parent"
+                        android:background="@color/transparent"/>
+                </LinearLayout>
+
+            </HorizontalScrollView>
+        </RelativeLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
+

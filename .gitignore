@@ -14,4 +14,5 @@
 .externalNativeBuild
 .cxx
 /app/src/main/cpp/native-lib.cpp
-google-services.jsonconfig files
+google-services.json
+CMakeLists.txt

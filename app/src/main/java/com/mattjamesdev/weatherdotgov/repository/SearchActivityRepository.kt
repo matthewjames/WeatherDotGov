@@ -22,7 +22,9 @@ class SearchActivityRepository {
     suspend fun getAlertData(zoneId: String) = weatherDotGovService.getAlertData(zoneId)
 
     private fun getWeatherDotGovService() : Any {
-        val client = OkHttpClient.Builder().cache(null).build()
+        val client = OkHttpClient.Builder()
+            .cache(null)
+            .build()
 
         val retrofit: Retrofit = Retrofit.Builder()
             .baseUrl(WEATHER_DOT_GOV_BASE_URL)

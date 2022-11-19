@@ -19,7 +19,8 @@ import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
 /**
  * A simple [Fragment] subclass.
  */
-class SevenDayFragment : Fragment() {
+class
+SevenDayFragment : Fragment() {
     private val TAG = "SevenDayFragment"
     private lateinit var viewModel: SearchActivityViewModel
     private lateinit var binding: FragmentSevenDayBinding
