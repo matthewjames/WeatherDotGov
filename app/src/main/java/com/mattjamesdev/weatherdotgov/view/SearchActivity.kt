@@ -5,19 +5,16 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View.*
-import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -26,31 +23,23 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
 import com.mattjamesdev.weatherdotgov.Keys
 import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.databinding.ActivitySearchBinding
-import com.mattjamesdev.weatherdotgov.model.DayForecast
-import com.mattjamesdev.weatherdotgov.model.ForecastData
-import com.mattjamesdev.weatherdotgov.model.Period
-import com.mattjamesdev.weatherdotgov.utils.TemperatureGraph
+import com.mattjamesdev.weatherdotgov.domain.model.LatLong
 import com.mattjamesdev.weatherdotgov.view.adapter.PagerAdapter
-import com.mattjamesdev.weatherdotgov.view.adapter.SevenDayAdapter
 import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
-import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_search.*
-import kotlinx.android.synthetic.main.fragment_seven_day.*
-import kotlinx.android.synthetic.main.fragment_today.*
-import kotlinx.android.synthetic.main.fragment_tomorrow.*
-import java.time.*
-import java.time.format.DateTimeFormatter
-import java.util.*
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class SearchActivity : AppCompatActivity() {
     private val TAG = "SearchActivity"
     private val LOCATION_REQUEST_CODE = 1310
     private val AUTO_COMPLETE_REQUEST_CODE = 503
-    private lateinit var viewModel: SearchActivityViewModel
+    private val viewModel: SearchActivityViewModel by viewModels()
     private lateinit var locationClient: FusedLocationProviderClient
     private lateinit var binding: ActivitySearchBinding
 
@@ -59,18 +48,27 @@ class SearchActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_search)
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-            getLastLocation()
-        } else {
-            requestLocationPermission()
-        }
-
         initViewModelComponents()
         initSearchBar()
         initTabLayout()
+        getLocation()
+
+        lifecycleScope.launch {
+            viewModel.location.collectLatest { latLong ->
+                if(latLong.isSet){
+                    search(latLong)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.errorMessage.collect{
+                showErrorSnackbar(it)
+            }
+        }
     }
 
-    private fun getLastLocation(){
+    private fun getLocation(){
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -79,69 +77,66 @@ class SearchActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TO DO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            requestLocationPermission()
             return
         }
-        locationClient.lastLocation.addOnSuccessListener { location: Location? ->
-            if (location != null){
-                viewModel.mLatitude = location.latitude
-                viewModel.mLongitude = location.longitude
-//                Log.d(TAG, "Location coordinates: $mLatitude, $mLongitude")
-                search()
-            } else {
-                Log.d(TAG, "Location was null")
-            }
+        locationClient.lastLocation.addOnSuccessListener { location ->
+            Log.d(TAG, "locationClient.lastlocation = $location")
+            viewModel.setLocation(
+                LatLong(
+                    lat = location.latitude,
+                    long = location.longitude
+                )
+            )
+        }
+        locationClient.lastLocation.addOnFailureListener {
+            showErrorSnackbar("Error getting devices location: ${it.message}")
         }
     }
 
+    private fun showErrorSnackbar(message: String){
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    }
+
     private fun requestLocationPermission(){
-        if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)){
-            Log.d(TAG, "requestLocationPermission: show dialog...")
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_REQUEST_CODE)
-        } else {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_REQUEST_CODE)
-        }
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ),
+            LOCATION_REQUEST_CODE
+        )
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if(requestCode == LOCATION_REQUEST_CODE){
             if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 // Permission granted
-                getLastLocation()
+                getLocation()
             } else {
                 // Permission denied
                 Toast.makeText(this, "Current location cannot be determined: Location Permission Denied", Toast.LENGTH_LONG).show()
             }
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     private fun initViewModelComponents(){
-        viewModel = ViewModelProvider(this).get(SearchActivityViewModel::class.java)
-
         // progress bar
-        viewModel.isLoading.observe(this, {
-            if(it){
+        viewModel.isLoading.observe(this) {
+            if (it) {
                 progressBar.visibility = VISIBLE
             } else {
                 binding.viewPager.adapter?.notifyDataSetChanged()
                 binding.viewPager.setCurrentItem(0, true)
                 progressBar.visibility = GONE
             }
-        })
+        }
 
-        viewModel.errorMessage.observe(this, {errorMessage ->
-            Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
-        })
-
-        viewModel.cityState.observe(this, { cityState ->
+        viewModel.cityState.observe(this) { cityState ->
             binding.etLocation.setText(cityState)
-        })
+        }
     }
 
     private fun initTabLayout(){
@@ -166,18 +161,28 @@ class SearchActivity : AppCompatActivity() {
 
         // search bar button
         binding.ivSearch.setOnClickListener {
-            search()
+//            lifecycleScope.launch {
+//                viewModel.location.collectLatest {
+//                    if (it != LatLong.EMPTY) {
+//                        search(it)
+//                    }
+//                }
+//            }
         }
 
         // Keyboard search button
-        binding.etLocation.setOnEditorActionListener { v, actionId, event ->
-            if(actionId == EditorInfo.IME_ACTION_SEARCH){
-                search()
-                true
-            } else {
-                false
-            }
-        }
+//        binding.etLocation.setOnEditorActionListener { v, actionId, event ->
+//            if(actionId == EditorInfo.IME_ACTION_SEARCH){
+//                lifecycleScope.launch {
+//                    viewModel.location.collectLatest {
+//                        search(it)
+//                    }
+//                }
+//                true
+//            } else {
+//                false
+//            }
+//        }
 
         // autocomplete functionality using Places SDK
 
@@ -195,18 +200,22 @@ class SearchActivity : AppCompatActivity() {
 
         if(requestCode == AUTO_COMPLETE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
             val place: Place = Autocomplete.getPlaceFromIntent(data!!)
-            viewModel.mLatitude = place.latLng!!.latitude
-            viewModel.mLongitude = place.latLng!!.longitude
-
-            search()
+            val autoCompleteLocation = LatLong(
+                lat = place.latLng!!.latitude,
+                long = place.latLng!!.longitude
+            )
+            if (autoCompleteLocation.isSet) {
+                viewModel.setLocation(autoCompleteLocation)
+            }
         } else if (resultCode == AutocompleteActivity.RESULT_ERROR){
             val status: Status = Autocomplete.getStatusFromIntent(data!!)
-            Toast.makeText(applicationContext, "Error: ${status.statusMessage}", Toast.LENGTH_LONG).show()
+            showErrorSnackbar("Error: ${status.statusMessage}")
         }
     }
 
-    private fun search(){
-        viewModel.getForecastData()
+    private fun search(latLong: LatLong){
+        Log.d(TAG, "fetching ForecastAreaV2 with $latLong")
+        viewModel.fetchForecastAreaV2(latLong)
 
         // dismiss keyboard
         val view = currentFocus

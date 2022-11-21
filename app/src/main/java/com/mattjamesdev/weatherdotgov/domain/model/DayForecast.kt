@@ -1,4 +1,6 @@
-package com.mattjamesdev.weatherdotgov.model
+package com.mattjamesdev.weatherdotgov.domain.model
+
+import com.mattjamesdev.weatherdotgov.data.model.Period
 
 data class DayForecast(
     var date: String? = null,
@@ -7,5 +9,6 @@ data class DayForecast(
     var low: Period? = null,
     var tempUnit: String? = null,
     var isExpanded: Boolean = false,
-    var hasAlert: Boolean = false
+    var hasAlert: Boolean = false,
+    var name: String = ""
 )

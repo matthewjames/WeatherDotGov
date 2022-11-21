@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -12,15 +11,12 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.lifecycle.ViewModelProvider
 
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolygonOptions
 import com.mattjamesdev.weatherdotgov.R
+import com.mattjamesdev.weatherdotgov.domain.model.LatLong
 import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
 
 class MapFragment : Fragment(), GoogleMap.OnMapClickListener {
@@ -29,32 +25,32 @@ class MapFragment : Fragment(), GoogleMap.OnMapClickListener {
     private lateinit var mListener: OnTouchListener
 
     private val callback = OnMapReadyCallback { googleMap ->
-        viewModel.gridpointData.observe(this) {
-            googleMap.clear()
-
-            // Maps array of array of coordinates to List<LatLng>
-            val polygonPoints =
-                it.geometry.coordinates[0].mapIndexed { index, list -> LatLng(list[1], list[0]) }
-            Log.d(TAG, "Polygon points: $polygonPoints")
-
-            // Draw polygon from coordinates list
-            googleMap.addPolygon(
-                PolygonOptions()
-                    .addAll(polygonPoints)
-                    .strokeWidth(3f)
-                    .strokeColor(resources.getColor(R.color.polyExterior, context?.theme))
-                    .fillColor(resources.getColor(R.color.polyInterior, context?.theme))
-            )
-
-            // Use coordinates list to build a boundary for the map to locate and focus on
-            val boundsBuilder = LatLngBounds.Builder()
-            for (point in polygonPoints) {
-                boundsBuilder.include(point)
-            }
-            val bounds = boundsBuilder.build()
-
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(bounds.center, 12f))
-        }
+//        viewModel.gridpointData.observe(this) {
+//            googleMap.clear()
+//
+//            // Maps array of array of coordinates to List<LatLng>
+//            val polygonPoints =
+//                it?.geometry?.coordinates?.mapIndexed { index, list -> LatLng(list[1], list[0]) }
+//            Log.d(TAG, "Polygon points: $polygonPoints")
+//
+//            // Draw polygon from coordinates list
+//            googleMap.addPolygon(
+//                PolygonOptions()
+//                    .addAll(polygonPoints)
+//                    .strokeWidth(3f)
+//                    .strokeColor(resources.getColor(R.color.polyExterior, context?.theme))
+//                    .fillColor(resources.getColor(R.color.polyInterior, context?.theme))
+//            )
+//
+//            // Use coordinates list to build a boundary for the map to locate and focus on
+//            val boundsBuilder = LatLngBounds.Builder()
+//            for (point in polygonPoints) {
+//                boundsBuilder.include(point)
+//            }
+//            val bounds = boundsBuilder.build()
+//
+//            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(bounds.center, 12f))
+//        }
 
         googleMap.setOnMapClickListener(this)
     }
@@ -87,7 +83,11 @@ class MapFragment : Fragment(), GoogleMap.OnMapClickListener {
     }
 
     override fun onMapClick(p0: LatLng) {
-        viewModel.getForecastData(p0.latitude, p0.longitude)
+        val latLong = LatLong(
+            lat = p0.latitude,
+            long = p0.longitude
+        )
+        viewModel.fetchForecastAreaV2(latLong)
     }
 
 
