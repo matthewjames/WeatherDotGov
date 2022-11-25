@@ -2,14 +2,20 @@ package com.mattjamesdev.weatherdotgov.repository
 
 import android.util.Log
 import com.mattjamesdev.weatherdotgov.data.model.forecastarea.toDomain
+import com.mattjamesdev.weatherdotgov.data.model.hourly.HourlyForecastResponse
+import com.mattjamesdev.weatherdotgov.data.model.sevenday.SevenDayForecastResponse
 import com.mattjamesdev.weatherdotgov.data.util.BaseApiResponse
 import com.mattjamesdev.weatherdotgov.data.util.NetworkResult
 import com.mattjamesdev.weatherdotgov.domain.model.ForecastAreaV2
 import com.mattjamesdev.weatherdotgov.domain.StateData
+import com.mattjamesdev.weatherdotgov.domain.model.DayForecast
 import com.mattjamesdev.weatherdotgov.network.WEATHER_DOT_GOV_BASE_URL
 import com.mattjamesdev.weatherdotgov.network.WeatherDotGovAPI
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -42,6 +48,12 @@ class SearchActivityRepository : BaseApiResponse() {
         }
     }
 
+    suspend fun getDailyForecastDataV2(forecastArea: ForecastAreaV2): Flow<Pair<HourlyForecastResponse, SevenDayForecastResponse>> = flow {
+        getHourlyForecastDataV2(forecastArea).combine(getSevenDayForecastDataV2(forecastArea)){ hourlyForecastData, sevenDayForecastData ->
+            Log.d(TAG, "getdailyForecastDataV2: new combine invoked\\nHourly Data: $hourlyForecastData\\nSeven Day Data: $sevenDayForecastData")
+            return@combine Pair(hourlyForecastData, sevenDayForecastData)
+        }
+    }
 
 
     suspend fun getForecastArea(latitude: Double, longitude: Double) = weatherDotGovService.getForecastArea(latitude, longitude)
@@ -50,7 +62,15 @@ class SearchActivityRepository : BaseApiResponse() {
 
     suspend fun getHourlyForecastData(forecastArea: ForecastAreaV2) = weatherDotGovService.getHourlyForecastData(forecastArea.wfo, forecastArea.gridX, forecastArea.gridY)
 
+    suspend fun getHourlyForecastDataV2(forecastArea: ForecastAreaV2): Flow<HourlyForecastResponse> = flow {
+        emit(weatherDotGovService.getHourlyForecastData(forecastArea.wfo, forecastArea.gridX, forecastArea.gridY))
+    }
+
     suspend fun getSevenDayForecastData(forecastArea: ForecastAreaV2) = weatherDotGovService.get7DayForecastData(forecastArea.wfo, forecastArea.gridX, forecastArea.gridY)
+
+    suspend fun getSevenDayForecastDataV2(forecastArea: ForecastAreaV2): Flow<SevenDayForecastResponse> = flow {
+        emit(weatherDotGovService.get7DayForecastData(forecastArea.wfo, forecastArea.gridX, forecastArea.gridY))
+    }
 
     suspend fun getAlertData(forecastArea: ForecastAreaV2) = weatherDotGovService.getAlertData(forecastArea.zoneId)
 

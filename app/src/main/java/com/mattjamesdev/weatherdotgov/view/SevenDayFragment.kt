@@ -23,7 +23,7 @@ SevenDayFragment : Fragment() {
     private val TAG = "SevenDayFragment"
     private lateinit var viewModel: SearchActivityViewModel
     private lateinit var binding: FragmentSevenDayBinding
-    private lateinit var hourlyForecastData: HourlyForecastResponse
+    private var hourlyForecastData: HourlyForecastResponse? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,19 +40,26 @@ SevenDayFragment : Fragment() {
             }
         })
 
-        viewModel.hourlyForecastData.observe(viewLifecycleOwner, { newHourlyForecastData ->
+        viewModel.hourlyForecastData.observe(viewLifecycleOwner) { newHourlyForecastData ->
             hourlyForecastData = newHourlyForecastData
-        })
+        }
 
-        viewModel.dailyForecastData.observe(viewLifecycleOwner,{ dayForecastList ->
+        viewModel.dailyForecastData.observe(viewLifecycleOwner) { dayForecastList ->
             // Populate 7 Day tab with data
-            binding.rvSevenDay.apply {
-                layoutManager = LinearLayoutManager(requireContext())
-                adapter = SevenDayAdapter(requireContext(), dayForecastList, hourlyForecastData, viewModel.mLongitude, viewModel.mLatitude)
+            hourlyForecastData?.let {
+                binding.rvSevenDay.apply {
+                    layoutManager = LinearLayoutManager(requireContext())
+                    adapter = SevenDayAdapter(
+                        requireContext(),
+                        dayForecastList,
+                        it,
+                        viewModel.mLongitude,
+                        viewModel.mLatitude
+                    )
+                }
+                binding.rlSevenDayFragment.visibility = View.VISIBLE
             }
-
-            binding.rlSevenDayFragment.visibility = View.VISIBLE
-        })
+        }
 
         return binding.root
     }

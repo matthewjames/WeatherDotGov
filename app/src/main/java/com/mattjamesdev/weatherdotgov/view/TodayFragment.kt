@@ -7,14 +7,18 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.mattjamesdev.weatherdotgov.R
 import com.mattjamesdev.weatherdotgov.data.model.Period
 import com.mattjamesdev.weatherdotgov.data.model.alerts.AlertsResponse
 import com.mattjamesdev.weatherdotgov.databinding.FragmentTodayBinding
+import com.mattjamesdev.weatherdotgov.domain.model.DayForecast
 import com.mattjamesdev.weatherdotgov.utils.TemperatureGraph
 import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_today.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -39,43 +43,27 @@ class TodayFragment : Fragment() {
                 binding.rlTodayFragment.visibility = View.INVISIBLE
                 binding.llAlert.visibility = View.GONE
                 binding.cvAlertInfo.visibility = View.GONE
+            } else {
+                binding.rlTodayFragment.visibility = View.VISIBLE
+                binding.llAlert.visibility = View.VISIBLE
+                binding.cvAlertInfo.visibility = View.VISIBLE
             }
         }
 
         viewModel.dailyForecastData.observe(viewLifecycleOwner) { dayForecastList ->
             // Updates TodayFragment UI with new data
-
-            val todayForecast = dayForecastList[0]
-            val currentForecast: Period = todayForecast.hourly?.get(0)!!
-            val tempUnit = todayForecast.tempUnit
-
-            binding.tvTodayDateTime.text =
-                DateTimeFormatter.ofPattern("MMMM d, h:mm a", Locale.getDefault())
-                    .format(LocalDateTime.now())
-            binding.tvTodayHigh.text =
-                getString(R.string.high_temp, todayForecast.high?.temperature, tempUnit)
-            binding.tvTodayLow.text =
-                getString(R.string.low_temp, todayForecast.low?.temperature, tempUnit)
-            binding.tvCurrentTemp.text =
-                getString(R.string.temp, currentForecast.temperature, tempUnit)
-            binding.tvTodayShortForecast.text = currentForecast.shortForecast
-            binding.tvTodayDetailedForecast.text =
-                if (currentForecast?.isDaytime == true) todayForecast.high?.detailedForecast else todayForecast.low?.detailedForecast
-
-            Picasso.get().load(currentForecast.icon?.replaceAfter("=", "large"))
-                .into(binding.ivTodayIcon)
-
-//        Log.d(TAG, "hourlyForecastData: ${hourlyForecastData.properties.periods.subList(0, 24)}")
-
-            binding.svTodayChart.scrollTo(0, 0)
-            binding.svTodayFragment.scrollTo(0, 0)
-
-            binding.rlTodayFragment.visibility = View.VISIBLE
+            if(dayForecastList[0].date != null){
+                bindDailyforecastData(dayForecastList)
+            }
         }
 
-        viewModel.hourlyForecastData.observe(viewLifecycleOwner) { hourlyForecastData ->
-            val periods = hourlyForecastData.properties?.periods?.subList(0, 24)
-            TemperatureGraph(requireContext(), periods, binding.todayHourlyChart).build()
+        lifecycleScope.launch {
+            viewModel.hourlyForecastResponse.collect { hourlyForecastData ->
+                val periods = hourlyForecastData.properties?.periods?.subList(0, 24)
+                periods?.let {
+                    TemperatureGraph(requireContext(), it, binding.todayHourlyChart).build()
+                }
+            }
         }
 
         viewModel.cityState.observe(viewLifecycleOwner) { newCityState ->
@@ -114,6 +102,35 @@ class TodayFragment : Fragment() {
         }
 
         supportMapFragment.setListener(listener)
+    }
+
+    private fun bindDailyforecastData(dayForecastList: MutableList<DayForecast>){
+        val todayForecast = dayForecastList[0]
+        val currentForecast: Period = todayForecast.hourly?.get(0)!!
+        val tempUnit = todayForecast.tempUnit
+
+        binding.dateTimeText =
+            DateTimeFormatter.ofPattern("MMMM d, h:mm a", Locale.getDefault())
+                .format(LocalDateTime.now())
+        binding.todayHighText =
+            getString(R.string.high_temp, todayForecast.high?.temperature.toString(), tempUnit)
+        binding.tvTodayLow.text =
+            getString(R.string.low_temp, todayForecast.low?.temperature, tempUnit)
+        binding.tvCurrentTemp.text =
+            getString(R.string.temp, currentForecast.temperature, tempUnit)
+        binding.tvTodayShortForecast.text = currentForecast.shortForecast
+        binding.tvTodayDetailedForecast.text =
+            if (currentForecast?.isDaytime == true) todayForecast.high?.detailedForecast else todayForecast.low?.detailedForecast
+
+        Picasso.get().load(currentForecast.icon?.replaceAfter("=", "large"))
+            .into(binding.ivTodayIcon)
+
+//        Log.d(TAG, "hourlyForecastData: ${hourlyForecastData.properties.periods.subList(0, 24)}")
+
+        binding.svTodayChart.scrollTo(0, 0)
+        binding.svTodayFragment.scrollTo(0, 0)
+
+        binding.rlTodayFragment.visibility = View.VISIBLE
     }
 
     private fun showAlert(alertData: AlertsResponse) {

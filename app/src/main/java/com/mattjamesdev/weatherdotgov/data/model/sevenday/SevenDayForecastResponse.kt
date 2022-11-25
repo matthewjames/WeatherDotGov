@@ -10,4 +10,12 @@ data class SevenDayForecastResponse(
     val properties: Properties?,
     @SerializedName("type")
     val type: String?
-)
+){
+    companion object {
+        val NO_DATA = SevenDayForecastResponse(
+            geometry = null,
+            properties = null,
+            type = null
+        )
+    }
+}
