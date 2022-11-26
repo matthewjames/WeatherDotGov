@@ -5,7 +5,7 @@
     <data>
         <variable
             name="dayForecast"
-            type="com.mattjamesdev.weatherdotgov.model.DayForecast" />
+            type="com.mattjamesdev.weatherdotgov.domain.model.DayForecast" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

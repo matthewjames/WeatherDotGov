@@ -1,18 +1,17 @@
 package com.mattjamesdev.weatherdotgov.view
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-
 import com.mattjamesdev.weatherdotgov.R
+import com.mattjamesdev.weatherdotgov.data.model.hourly.HourlyForecastResponse
 import com.mattjamesdev.weatherdotgov.databinding.FragmentSevenDayBinding
-import com.mattjamesdev.weatherdotgov.model.ForecastData
 import com.mattjamesdev.weatherdotgov.view.adapter.SevenDayAdapter
 import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
 
@@ -24,7 +23,7 @@ SevenDayFragment : Fragment() {
     private val TAG = "SevenDayFragment"
     private lateinit var viewModel: SearchActivityViewModel
     private lateinit var binding: FragmentSevenDayBinding
-    private lateinit var hourlyForecastData: ForecastData
+    private var hourlyForecastData: HourlyForecastResponse? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,19 +40,26 @@ SevenDayFragment : Fragment() {
             }
         })
 
-        viewModel.hourlyForecastData.observe(viewLifecycleOwner, { newHourlyForecastData ->
+        viewModel.hourlyForecastData.observe(viewLifecycleOwner) { newHourlyForecastData ->
             hourlyForecastData = newHourlyForecastData
-        })
+        }
 
-        viewModel.dailyForecastData.observe(viewLifecycleOwner,{ dayForecastList ->
+        viewModel.dailyForecastData.observe(viewLifecycleOwner) { dayForecastList ->
             // Populate 7 Day tab with data
-            binding.rvSevenDay.apply {
-                layoutManager = LinearLayoutManager(requireContext())
-                adapter = SevenDayAdapter(requireContext(), dayForecastList, hourlyForecastData, viewModel.mLongitude, viewModel.mLatitude)
+            hourlyForecastData?.let {
+                binding.rvSevenDay.apply {
+                    layoutManager = LinearLayoutManager(requireContext())
+                    adapter = SevenDayAdapter(
+                        requireContext(),
+                        dayForecastList,
+                        it,
+                        viewModel.mLongitude,
+                        viewModel.mLatitude
+                    )
+                }
+                binding.rlSevenDayFragment.visibility = View.VISIBLE
             }
-
-            binding.rlSevenDayFragment.visibility = View.VISIBLE
-        })
+        }
 
         return binding.root
     }

@@ -3,6 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <data>
+        <variable
+            name="dateTimeText"
+            type="String" />
+        <variable
+            name="todayHighText"
+            type="String" />
+        <variable
+            name="tempUnit"
+            type="String" />
+    </data>
+
     <RelativeLayout
         android:id="@+id/rlTodayFragment"
         android:layout_width="match_parent"
@@ -50,7 +62,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_alignParentStart="true"
                                 android:layout_alignParentTop="true"
-                                android:text="DateTime"
+                                android:text="@{dateTimeText}"
                                 android:textSize="16sp" />
 
                             <TextView
@@ -59,7 +71,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_below="@+id/tvTodayDateTime"
-                                android:text="@string/high_temp"
+                                android:text="@{@string/high_temp(todayHighText, tempUnit)}"
                                 android:textSize="16sp" />
 
                             <TextView

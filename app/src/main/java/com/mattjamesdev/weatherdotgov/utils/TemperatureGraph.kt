@@ -11,12 +11,12 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.mattjamesdev.weatherdotgov.R
-import com.mattjamesdev.weatherdotgov.model.Period
+import com.mattjamesdev.weatherdotgov.data.model.Period
 import java.text.DecimalFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class TemperatureGraph(val context: Context, val periods: List<Period>, val chart: LineChart) {
+class TemperatureGraph(val context: Context, val periods: List<Period?>?, val chart: LineChart) {
     private val labels = createXAxisLabels()
     private val dataSet = createLineChartDataSet()
     var animateTime = 1500
@@ -31,8 +31,8 @@ class TemperatureGraph(val context: Context, val periods: List<Period>, val char
         val fromFormat = DateTimeFormatter.ISO_OFFSET_DATE_TIME
         val toFormat = DateTimeFormatter.ofPattern("h a")
 
-        for(i in periods.indices){
-            val label = LocalDateTime.parse(periods[i].startTime, fromFormat).format(toFormat)
+        for(i in periods?.indices!!){
+            val label = LocalDateTime.parse(periods[i]?.startTime, fromFormat).format(toFormat)
 //            Log.d(TAG, "Label $label created from ${periods[i].startTime}")
 
             labels.add(
@@ -50,11 +50,11 @@ class TemperatureGraph(val context: Context, val periods: List<Period>, val char
     private fun createLineChartDataSet() : LineDataSet {
         val entries = ArrayList<Entry>()
 
-        for(i in periods.indices){
+        for(i in periods?.indices!!){
             // parse hourly forecast data into entries for data set
             // entries parsed as (hour, temperature)
 
-            val temperature = periods[i].temperature.toFloat()
+            val temperature = periods[i]?.temperature?.toFloat() ?: 0f
             entries.add(Entry(i.toFloat(), temperature))
         }
 
