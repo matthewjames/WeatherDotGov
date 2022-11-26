@@ -127,6 +127,7 @@ class SearchActivity : AppCompatActivity() {
         viewModel.isLoading.observe(this) {
             if (it) {
                 progressBar.visibility = VISIBLE
+                binding.cityState = ""
             } else {
                 binding.viewPager.adapter?.notifyDataSetChanged()
                 binding.viewPager.setCurrentItem(0, true)
@@ -157,7 +158,7 @@ class SearchActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             viewModel.cityState.collect { cityState ->
-                binding.cityState = cityState
+                binding.cityState = resources.getString(R.string.search_city_state, cityState.city, cityState.state)
             }
         }
 
