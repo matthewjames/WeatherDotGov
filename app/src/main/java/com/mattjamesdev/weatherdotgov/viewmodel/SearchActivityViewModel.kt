@@ -32,6 +32,9 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     private val _cityState = MutableStateFlow(CityState.NULL)
     val cityState = _cityState.asStateFlow()
 
+    private val _pointForecastText = MutableStateFlow("")
+    val pointForecastText = _pointForecastText.asStateFlow()
+
     // legacy vals/vars
     private val TAG = "SearchActivityVM"
     private val repository = SearchActivityRepository()
@@ -61,6 +64,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     fun setLocation(latLong: LatLong) {
         Log.d(TAG, "New location set: lat=${latLong.lat}, long=${latLong.long}")
         _location.value = latLong
+        _pointForecastText.value = latLong.toPointForecast()
     }
 
     fun fetchForecastAreaV2(latLong: LatLong) {

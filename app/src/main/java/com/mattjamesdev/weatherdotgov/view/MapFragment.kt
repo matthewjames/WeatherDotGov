@@ -99,7 +99,7 @@ class MapFragment : Fragment(), GoogleMap.OnMapClickListener {
             lat = p0.latitude,
             long = p0.longitude
         )
-        viewModel.fetchForecastAreaV2(latLong)
+        viewModel.setLocation(latLong)
     }
 
 
