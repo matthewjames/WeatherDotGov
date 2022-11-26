@@ -1,4 +1,11 @@
 <resources>
+    <string name="city_state">%s, %s</string>
+
+    <string name="search_city_state">@string/city_state</string>
+
+    <string name="today_point_forecast_city_state">@string/city_state</string>
+
+    <!-- legacy strings -->
     <string name="app_name">Weather DotGov</string>
     <string name="default_search_bar">City, State or Zip</string>
     <string name="tab_today">Today</string>

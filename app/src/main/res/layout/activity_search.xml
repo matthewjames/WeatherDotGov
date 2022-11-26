@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <data>
+        <variable
+            name="cityState"
+            type="com.mattjamesdev.weatherdotgov.domain.model.CityState" />
+    </data>
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -47,6 +53,7 @@
                         android:layout_toEndOf="@+id/ivMenu"
                         android:backgroundTint="@android:color/white"
                         android:gravity="center_vertical"
+                        android:text="@{@string/search_city_state(cityState.city, cityState.state)}"
                         android:hint="@string/default_search_bar"
                         android:imeOptions="actionSearch"
                         android:inputType="text"

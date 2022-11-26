@@ -133,10 +133,6 @@ class SearchActivity : AppCompatActivity() {
                 progressBar.visibility = GONE
             }
         }
-
-        viewModel.cityState.observe(this) { cityState ->
-            binding.etLocation.setText(cityState)
-        }
     }
 
     private fun initTabLayout(){
@@ -158,6 +154,12 @@ class SearchActivity : AppCompatActivity() {
 
     private fun initSearchBar(){
         binding.etLocation.focusable = NOT_FOCUSABLE
+
+        lifecycleScope.launch {
+            viewModel.cityState.collect { cityState ->
+                binding.cityState = cityState
+            }
+        }
 
         // search bar button
         binding.ivSearch.setOnClickListener {
@@ -197,19 +199,25 @@ class SearchActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        data?.let { intentData ->
+            if(requestCode == AUTO_COMPLETE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
+                val place: Place = Autocomplete.getPlaceFromIntent(intentData)
 
-        if(requestCode == AUTO_COMPLETE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
-            val place: Place = Autocomplete.getPlaceFromIntent(data!!)
-            val autoCompleteLocation = LatLong(
-                lat = place.latLng!!.latitude,
-                long = place.latLng!!.longitude
-            )
-            if (autoCompleteLocation.isSet) {
-                viewModel.setLocation(autoCompleteLocation)
+                place.latLng?.let { latLng ->
+                    val autoCompleteLocation = LatLong(
+                        lat = latLng.latitude,
+                        long = latLng.longitude
+                    )
+                    if (autoCompleteLocation.isSet) {
+                        viewModel.setLocation(autoCompleteLocation)
+                    }
+                }
+            } else if (resultCode == AutocompleteActivity.RESULT_ERROR){
+                val status: Status = Autocomplete.getStatusFromIntent(intentData)
+                showErrorSnackbar("Error: ${status.statusMessage}")
+            } else {
+                return
             }
-        } else if (resultCode == AutocompleteActivity.RESULT_ERROR){
-            val status: Status = Autocomplete.getStatusFromIntent(data!!)
-            showErrorSnackbar("Error: ${status.statusMessage}")
         }
     }
 
