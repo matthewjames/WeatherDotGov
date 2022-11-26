@@ -11,6 +11,7 @@ import com.mattjamesdev.weatherdotgov.data.model.gridpoint.GridpointResponse
 import com.mattjamesdev.weatherdotgov.data.model.hourly.HourlyForecastResponse
 import com.mattjamesdev.weatherdotgov.data.model.sevenday.SevenDayForecastResponse
 import com.mattjamesdev.weatherdotgov.domain.StateData
+import com.mattjamesdev.weatherdotgov.domain.model.CityState
 import com.mattjamesdev.weatherdotgov.domain.model.DayForecast
 import com.mattjamesdev.weatherdotgov.domain.model.ForecastAreaV2
 import com.mattjamesdev.weatherdotgov.domain.model.LatLong
@@ -32,6 +33,9 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     private val _sevenDayForecastResponse = MutableStateFlow(SevenDayForecastResponse.NO_DATA)
     val sevenDayForecastResponse = _sevenDayForecastResponse.asStateFlow()
 
+    private val _cityState = MutableStateFlow(CityState.NULL)
+    val cityState = _cityState.asStateFlow()
+
     // legacy vals/vars
     private val TAG = "SearchActivityVM"
     private val repository = SearchActivityRepository()
@@ -42,7 +46,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     val sevenDayForecastData: MutableLiveData<SevenDayForecastResponse> = MutableLiveData()
     val alertData: MutableLiveData<AlertsResponse> = MutableLiveData()
 //    val errorMessage: MutableLiveData<String> = MutableLiveData()
-    val cityState: MutableLiveData<String> = MutableLiveData()
+//    val cityState: MutableLiveData<String> = MutableLiveData()
     val pointForecastLatLong: MutableLiveData<String> = MutableLiveData()
     var mLatitude: Double = 0.0
     var mLongitude: Double = 0.0
@@ -65,6 +69,14 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
         isLoading.value = true
         viewModelScope.launch {
             repository.getForecastAreaV2(latLong.lat, latLong.long).collect { forecastAreaStateData ->
+                if (forecastAreaStateData.state == StateData.State.Ready){
+                    forecastAreaStateData.data?.let {
+                        _cityState.value = CityState(
+                            city = it.city,
+                            state = it.state,
+                        )
+                    }
+                }
                 getForecastDataV2(forecastAreaStateData)
             }
         }

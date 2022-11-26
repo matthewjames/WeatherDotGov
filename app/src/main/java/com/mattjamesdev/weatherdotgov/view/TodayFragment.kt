@@ -61,9 +61,12 @@ class TodayFragment : Fragment() {
             }
         }
 
-        viewModel.cityState.observe(viewLifecycleOwner) { newCityState ->
-            binding.tvPointForecastCityState.text = newCityState
+        lifecycleScope.launch {
+            viewModel.cityState.collect { newCityState ->
+                binding.cityState = newCityState
+            }
         }
+
 
         viewModel.pointForecastLatLong.observe(viewLifecycleOwner) { newLatLong ->
             binding.tvPointForecastLatLong.text = newLatLong

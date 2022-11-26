@@ -13,6 +13,9 @@
         <variable
             name="tempUnit"
             type="String" />
+        <variable
+            name="cityState"
+            type="com.mattjamesdev.weatherdotgov.domain.model.CityState" />
     </data>
 
     <RelativeLayout
@@ -71,7 +74,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_below="@+id/tvTodayDateTime"
-                                android:text="@{@string/high_temp(todayHighText, tempUnit)}"
+                                android:text="@{todayHighText}"
                                 android:textSize="16sp" />
 
                             <TextView
@@ -288,6 +291,7 @@
                                 android:layout_below="@id/mapContainer"
                                 android:layout_centerHorizontal="true"
                                 android:textAlignment="center"
+                                android:text="@{@string/today_point_forecast_city_state(cityState.city, cityState.state)}"
                                 />
 
                             <TextView
