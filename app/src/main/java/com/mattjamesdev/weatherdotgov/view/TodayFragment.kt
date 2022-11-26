@@ -17,7 +17,6 @@ import com.mattjamesdev.weatherdotgov.utils.TemperatureGraph
 import com.mattjamesdev.weatherdotgov.viewmodel.SearchActivityViewModel
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_today.*
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -43,16 +42,12 @@ class TodayFragment : Fragment() {
                 binding.rlTodayFragment.visibility = View.INVISIBLE
                 binding.llAlert.visibility = View.GONE
                 binding.cvAlertInfo.visibility = View.GONE
-            } else {
-                binding.rlTodayFragment.visibility = View.VISIBLE
-                binding.llAlert.visibility = View.VISIBLE
-                binding.cvAlertInfo.visibility = View.VISIBLE
             }
         }
 
         viewModel.dailyForecastData.observe(viewLifecycleOwner) { dayForecastList ->
             // Updates TodayFragment UI with new data
-            if(dayForecastList[0].date != null){
+            if (dayForecastList[0].date != null) {
                 bindDailyforecastData(dayForecastList)
             }
         }
@@ -104,7 +99,7 @@ class TodayFragment : Fragment() {
         supportMapFragment.setListener(listener)
     }
 
-    private fun bindDailyforecastData(dayForecastList: MutableList<DayForecast>){
+    private fun bindDailyforecastData(dayForecastList: MutableList<DayForecast>) {
         val todayForecast = dayForecastList[0]
         val currentForecast: Period = todayForecast.hourly?.get(0)!!
         val tempUnit = todayForecast.tempUnit
