@@ -127,7 +127,13 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     private fun getGridpointData(forecastArea: ForecastAreaV2?){
         forecastArea?.let { forecastArea ->
             viewModelScope.launch {
-                gridpointData.value = repository.getGridpointData(forecastArea)
+                repository.getGridpointData(forecastArea).collect { gridPointDataStateData ->
+                    when(gridPointDataStateData){
+                        is StateData.Ready -> { }
+                        is StateData.Error -> { }
+                        is StateData.Loading -> { }
+                    }
+                }
             }
         }
     }

@@ -29,7 +29,7 @@ interface WeatherDotGovAPI {
         @Path("wfo") wfo: String,
         @Path("x") x: Int,
         @Path("y") y: Int
-    ): GridpointResponse
+    ): Response<GridpointResponse>
 
     @GET("gridpoints/{wfo}/{x},{y}/forecast/hourly")
     suspend fun getHourlyForecastData(

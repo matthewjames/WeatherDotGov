@@ -2,6 +2,8 @@ package com.mattjamesdev.weatherdotgov.repository
 
 import android.util.Log
 import com.mattjamesdev.weatherdotgov.data.model.forecastarea.toDomain
+import com.mattjamesdev.weatherdotgov.data.model.gridpoint.GridpointResponse
+import com.mattjamesdev.weatherdotgov.data.model.gridpoint.toDomain
 import com.mattjamesdev.weatherdotgov.data.model.hourly.HourlyForecastResponse
 import com.mattjamesdev.weatherdotgov.data.model.sevenday.SevenDayForecastResponse
 import com.mattjamesdev.weatherdotgov.data.util.BaseApiResponse
@@ -9,6 +11,7 @@ import com.mattjamesdev.weatherdotgov.data.util.NetworkResult
 import com.mattjamesdev.weatherdotgov.domain.model.ForecastAreaV2
 import com.mattjamesdev.weatherdotgov.domain.StateData
 import com.mattjamesdev.weatherdotgov.domain.model.DayForecast
+import com.mattjamesdev.weatherdotgov.domain.model.GridpointData
 import com.mattjamesdev.weatherdotgov.network.WEATHER_DOT_GOV_BASE_URL
 import com.mattjamesdev.weatherdotgov.network.WeatherDotGovAPI
 import kotlinx.coroutines.flow.Flow
@@ -58,7 +61,17 @@ class SearchActivityRepository : BaseApiResponse() {
 
     suspend fun getForecastArea(latitude: Double, longitude: Double) = weatherDotGovService.getForecastArea(latitude, longitude)
 
-    suspend fun getGridpointData(forecastArea: ForecastAreaV2) = weatherDotGovService.getGridpointData(forecastArea.wfo, forecastArea.gridX, forecastArea.gridY)
+    suspend fun getGridpointData(forecastArea: ForecastAreaV2): Flow<StateData<GridpointData?>> = flow {
+        val networkResult = safeApiCall {
+            weatherDotGovService.getGridpointData(forecastArea.wfo, forecastArea.gridX, forecastArea.gridY)
+        }
+
+        when(networkResult){
+            is NetworkResult.Success -> emit(StateData.Ready(data = networkResult.data?.toDomain()))
+            is NetworkResult.Error -> emit(StateData.Error(message = networkResult.message.orEmpty()))
+            is NetworkResult.Loading -> emit(StateData.Loading())
+        }
+    }
 
     suspend fun getHourlyForecastData(forecastArea: ForecastAreaV2) = weatherDotGovService.getHourlyForecastData(forecastArea.wfo, forecastArea.gridX, forecastArea.gridY)
 
