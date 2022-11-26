@@ -1,5 +1,7 @@
 package com.mattjamesdev.weatherdotgov.domain.model
 
+import com.google.android.gms.maps.model.LatLng
+
 data class LatLong(
     val lat: Double,
     val long: Double,
@@ -9,7 +11,7 @@ data class LatLong(
 
     override fun toString(): String = "$lat,$long"
 
-    fun toPointForecast(): String = "${lat}°N ${long*-1}°W"
+    fun toPointForecast(): String = "${lat}°N ${long * -1}°W"
 
     companion object {
         val EMPTY = LatLong(
@@ -18,3 +20,10 @@ data class LatLong(
         )
     }
 }
+
+fun LatLong.toLatLng(): LatLng = LatLng(
+    this.lat,
+    this.long
+)
+
+fun List<LatLong>.toLatLngList(): List<LatLng> = this.map { it.toLatLng() }
