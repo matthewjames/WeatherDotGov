@@ -7,14 +7,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.mattjamesdev.weatherdotgov.data.model.Period
 import com.mattjamesdev.weatherdotgov.data.model.alerts.AlertsResponse
-import com.mattjamesdev.weatherdotgov.data.model.gridpoint.GridpointResponse
 import com.mattjamesdev.weatherdotgov.data.model.hourly.HourlyForecastResponse
 import com.mattjamesdev.weatherdotgov.data.model.sevenday.SevenDayForecastResponse
 import com.mattjamesdev.weatherdotgov.domain.StateData
-import com.mattjamesdev.weatherdotgov.domain.model.CityState
-import com.mattjamesdev.weatherdotgov.domain.model.DayForecast
-import com.mattjamesdev.weatherdotgov.domain.model.ForecastAreaV2
-import com.mattjamesdev.weatherdotgov.domain.model.LatLong
+import com.mattjamesdev.weatherdotgov.domain.model.*
 import com.mattjamesdev.weatherdotgov.repository.SearchActivityRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -36,16 +32,20 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     private val _cityState = MutableStateFlow(CityState.NULL)
     val cityState = _cityState.asStateFlow()
 
+    private val _pointForecastText = MutableStateFlow("")
+    val pointForecastText = _pointForecastText.asStateFlow()
+
     // legacy vals/vars
     private val TAG = "SearchActivityVM"
     private val repository = SearchActivityRepository()
     val isLoading: MutableLiveData<Boolean> = MutableLiveData(false)
-    val gridpointData: MutableLiveData<GridpointResponse> = MutableLiveData()
+    val gridpointData: MutableLiveData<GridpointData> = MutableLiveData()
     val dailyForecastData: MutableLiveData<MutableList<DayForecast>> = MutableLiveData()
     val hourlyForecastData: MutableLiveData<HourlyForecastResponse> = MutableLiveData()
     val sevenDayForecastData: MutableLiveData<SevenDayForecastResponse> = MutableLiveData()
     val alertData: MutableLiveData<AlertsResponse> = MutableLiveData()
-//    val errorMessage: MutableLiveData<String> = MutableLiveData()
+
+    //    val errorMessage: MutableLiveData<String> = MutableLiveData()
 //    val cityState: MutableLiveData<String> = MutableLiveData()
     val pointForecastLatLong: MutableLiveData<String> = MutableLiveData()
     var mLatitude: Double = 0.0
@@ -53,8 +53,9 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
 
     init {
         viewModelScope.launch {
-            hourlyForecastResponse.combine(sevenDayForecastResponse){ hourlyForecastResponse, sevenDayForecastResponse ->
-                dailyForecastData.value = combineLatestData(hourlyForecastResponse, sevenDayForecastResponse)
+            hourlyForecastResponse.combine(sevenDayForecastResponse) { hourlyForecastResponse, sevenDayForecastResponse ->
+                dailyForecastData.value =
+                    combineLatestData(hourlyForecastResponse, sevenDayForecastResponse)
             }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
         }
     }
@@ -63,27 +64,29 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
     fun setLocation(latLong: LatLong) {
         Log.d(TAG, "New location set: lat=${latLong.lat}, long=${latLong.long}")
         _location.value = latLong
+        _pointForecastText.value = latLong.toPointForecast()
     }
 
-    fun fetchForecastAreaV2(latLong: LatLong){
+    fun fetchForecastAreaV2(latLong: LatLong) {
         isLoading.value = true
         viewModelScope.launch {
-            repository.getForecastAreaV2(latLong.lat, latLong.long).collect { forecastAreaStateData ->
-                if (forecastAreaStateData.state == StateData.State.Ready){
-                    forecastAreaStateData.data?.let {
-                        _cityState.value = CityState(
-                            city = it.city,
-                            state = it.state,
-                        )
+            repository.getForecastAreaV2(latLong.lat, latLong.long)
+                .collect { forecastAreaStateData ->
+                    if (forecastAreaStateData.state == StateData.State.Ready) {
+                        forecastAreaStateData.data?.let {
+                            _cityState.value = CityState(
+                                city = it.city,
+                                state = it.state,
+                            )
+                        }
                     }
+                    getForecastDataV2(forecastAreaStateData)
                 }
-                getForecastDataV2(forecastAreaStateData)
-            }
         }
     }
 
-    private fun getForecastDataV2(forecastAreaStateData: StateData<ForecastAreaV2?>){
-        when(forecastAreaStateData){
+    private fun getForecastDataV2(forecastAreaStateData: StateData<ForecastAreaV2?>) {
+        when (forecastAreaStateData) {
             is StateData.Ready -> {
                 val forecastArea = forecastAreaStateData.data
                 getGridpointData(forecastArea)
@@ -103,46 +106,62 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
         }
     }
 
-    private fun getDailyForecastData(forecastArea: ForecastAreaV2?){
+    private fun getDailyForecastData(forecastArea: ForecastAreaV2?) {
         forecastArea?.let { forecastArea ->
             viewModelScope.launch {
-                repository.getDailyForecastDataV2(forecastArea).flowOn(Dispatchers.IO).collectLatest { dailyForecastDataResponse ->
+                repository.getDailyForecastDataV2(forecastArea).flowOn(Dispatchers.IO)
+                    .collectLatest { dailyForecastDataResponse ->
 
-                }
+                    }
 
             }
         }
     }
 
-    private fun getSevenDayData(forecastArea: ForecastAreaV2?){
+    private fun getSevenDayData(forecastArea: ForecastAreaV2?) {
         forecastArea?.let { forecastArea ->
             viewModelScope.launch {
-                repository.getSevenDayForecastDataV2(forecastArea).flowOn(Dispatchers.IO).collect{
+                repository.getSevenDayForecastDataV2(forecastArea).flowOn(Dispatchers.IO).collect {
                     _sevenDayForecastResponse.value = it
                 }
             }
         }
     }
 
-    private fun getGridpointData(forecastArea: ForecastAreaV2?){
+    private fun getGridpointData(forecastArea: ForecastAreaV2?) {
         forecastArea?.let { forecastArea ->
             viewModelScope.launch {
-                gridpointData.value = repository.getGridpointData(forecastArea)
+                repository.getGridpointData(forecastArea).flowOn(Dispatchers.IO)
+                    .collect { gridPointDataStateData ->
+                        when (gridPointDataStateData) {
+                            is StateData.Ready -> {
+                                gridPointDataStateData.data?.let {
+                                    gridpointData.value = it
+                                }
+                                isLoading.value = false
+                            }
+                            is StateData.Error -> {
+                                showError(gridPointDataStateData.message)
+                                isLoading.value = false
+                            }
+                            is StateData.Loading -> { isLoading.value = true }
+                        }
+                    }
             }
         }
     }
 
-    private fun hourlyForecastData(forecastArea: ForecastAreaV2?){
+    private fun hourlyForecastData(forecastArea: ForecastAreaV2?) {
         forecastArea?.let { forecastArea ->
             viewModelScope.launch {
-                repository.getHourlyForecastDataV2(forecastArea).flowOn(Dispatchers.IO).collect{
+                repository.getHourlyForecastDataV2(forecastArea).flowOn(Dispatchers.IO).collect {
                     _hourlyForecastResponse.value = it
                 }
             }
         }
     }
 
-    private fun alertData(forecastArea: ForecastAreaV2?){
+    private fun alertData(forecastArea: ForecastAreaV2?) {
         forecastArea?.let { forecastArea ->
             viewModelScope.launch {
                 alertData.value = repository.getAlertData(forecastArea)
@@ -150,7 +169,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
         }
     }
 
-    private fun showError(message: String){
+    private fun showError(message: String) {
         viewModelScope.launch {
             _errorMessage.value = message
         }
@@ -212,7 +231,10 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
 //    }
 
     // parses the hourly and seven day forecast data into MutableList<DayForecast>
-    private fun combineLatestData(hourlyForecastResponse: HourlyForecastResponse, sevenDayForecastResponse: SevenDayForecastResponse): MutableList<DayForecast> {
+    private fun combineLatestData(
+        hourlyForecastResponse: HourlyForecastResponse,
+        sevenDayForecastResponse: SevenDayForecastResponse
+    ): MutableList<DayForecast> {
         Log.d(TAG, "Combining hourly and daily forecast data...")
 
         // parse hourly data into DayForecast objects and add to dailyData
@@ -220,11 +242,11 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
         var sevenDayPeriods: List<Period?>? = sevenDayForecastResponse.properties?.periods
 
         // initialize list of empty dayForecasts
-        val dayForecastList = MutableList(7){index -> DayForecast() }
+        val dayForecastList = MutableList(7) { index -> DayForecast() }
 
         // initialize each DayForecast
         if (hourlyPeriods != null && sevenDayPeriods != null) {
-            for(dayForecast in dayForecastList) {
+            for (dayForecast in dayForecastList) {
 
                 // initialize date
                 val date = hourlyPeriods?.get(0)?.startTime?.substring(0..9)
@@ -234,7 +256,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
 
                 // iterate through hourly data and populate new list of hourly periods with same date
                 val dayHourlyPeriodList = mutableListOf<Period>()
-                for(j in 0 until (hourlyPeriods?.size?.minus(1) ?: 0)){
+                for (j in 0 until (hourlyPeriods?.size?.minus(1) ?: 0)) {
                     /**
                      * if DayForecast.date is the same as current period date:
                      *      add to list of periods
@@ -243,10 +265,11 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                      *      slice list from j -> end of list
                      */
 
-                    if(dayForecast.date == hourlyPeriods?.get(j)?.startTime?.substring(0,10)){
+                    if (dayForecast.date == hourlyPeriods?.get(j)?.startTime?.substring(0, 10)) {
                         hourlyPeriods?.get(j)?.let { dayHourlyPeriodList.add(it) }
                     } else {
-                        hourlyPeriods = hourlyPeriods?.slice(j until hourlyPeriods.size) as MutableList<Period?>?
+                        hourlyPeriods =
+                            hourlyPeriods?.slice(j until hourlyPeriods.size) as MutableList<Period?>?
                         break
                     }
                 }
@@ -267,7 +290,7 @@ class SearchActivityViewModel(application: Application) : AndroidViewModel(appli
                  *      slice sevenDayList from 1 -> end of list
                  */
 
-                if(sevenDayPeriods?.get(0)?.isDaytime == true){
+                if (sevenDayPeriods?.get(0)?.isDaytime == true) {
                     dayForecast.high = sevenDayPeriods[0]
                     dayForecast.low = sevenDayPeriods[1]
                     try {

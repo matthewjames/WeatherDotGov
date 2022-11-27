@@ -67,6 +67,11 @@ class TodayFragment : Fragment() {
             }
         }
 
+        lifecycleScope.launch {
+            viewModel.pointForecastText.collect {
+                binding.pointForecastLatLong = it
+            }
+        }
 
         viewModel.pointForecastLatLong.observe(viewLifecycleOwner) { newLatLong ->
             binding.tvPointForecastLatLong.text = newLatLong

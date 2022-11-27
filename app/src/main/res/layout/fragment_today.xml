@@ -16,6 +16,9 @@
         <variable
             name="cityState"
             type="com.mattjamesdev.weatherdotgov.domain.model.CityState" />
+        <variable
+            name="pointForecastLatLong"
+            type="String" />
     </data>
 
     <RelativeLayout
@@ -303,6 +306,7 @@
                                 android:layout_below="@id/tvPointForecastCityState"
                                 android:layout_centerHorizontal="true"
                                 android:textAlignment="center"
+                                android:text="@{pointForecastLatLong}"
                                 />
 
                         </RelativeLayout>
